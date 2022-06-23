@@ -1,0 +1,4 @@
+[^.]*
+!statusall
+!cleanall
+!updateall

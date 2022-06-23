@@ -1,0 +1,67 @@
+#!/bin/bash
+
+
+red="\033[00;31m"
+green="\033[00;32m"
+yellow="\033[00;33m"
+blue="\033[00;34m"
+purple="\033[00;35m"
+cyan="\033[00;36m"
+
+reset="\033[00m"
+
+for gitdir in `find . $i -name .git` ; do
+( 
+	working=$(dirname $gitdir)
+	cd $working
+	INFO="$cyan Current dir: $working/$reset"
+	echo " "
+	echo "------------------------------"
+	echo -e "$INFO"
+	echo "------------------------------"
+	RES=$(git status | grep -E '(Changed|Changes|Untracked|Your branch|nothing)')
+	STAT=""
+
+	grep -e 'Untracked' <<<${RES} >/dev/null 2>&1
+	if [ $? -eq 0 ] ; then
+		STAT=" $red [Untracked] $reset"
+	fi
+
+	grep -e 'Changed but not updated' <<<${RES} >/dev/null 2>&1
+	if [ $? -eq 0 ] ; then
+		STAT=" $red [Modified] $reset"
+	fi
+
+	grep -e 'Changes not staged for commit' <<<${RES} >/dev/null 2>&1
+	if [ $? -eq 0 ] ; then
+		STAT="$STAT $red [Modified] $reset"
+	fi
+
+	grep -e 'Changes to be committed' <<<${RES} >/dev/null 2>&1
+	if [ $? -eq 0 ] ; then
+		STAT="$STAT $green [Staged] $reset"
+	fi
+
+	grep -e 'Your branch is ahead' <<<${RES} >/dev/null 2>&1
+	if [ $? -eq 0 ] ; then
+		STAT="$STAT $yellow [Unpushed] $reset"
+	fi
+
+	grep -e 'Your branch is behind' <<<${RES} >/dev/null 2>&1
+	if [ $? -eq 0 ] ; then
+		STAT="$STAT $cyan [Unmerged] $reset"
+	fi
+
+	grep -e 'nothing to commit' <<<${RES} >/dev/null 2>&1
+	if [ $? -eq 0 ] ; then
+		STAT="$STAT [clean]"
+	fi
+
+	if [ -n "$STAT" ] ; then
+		echo -e "$working :$STAT"
+	fi
+)
+done
+
+echo " "
+

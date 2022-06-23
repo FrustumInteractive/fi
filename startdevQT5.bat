@@ -1,0 +1,1 @@
+set path=%path%;C:\Qt\5.5\msvc2013_64\bin;c:\mingw32\bin;c:\dev\bin

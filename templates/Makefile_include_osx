@@ -1,0 +1,49 @@
+
+
+INFOPLIST = \
+	"\<?xml version=\"1.0\" encoding=\"UTF-8\"?\>" \
+	"\\n\<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\"\>" \
+	"\\n\<plist version=\"1.0\"\>" \
+	"\\n\<dict\>" \
+	"\\n\\t\<key\>CFBundleDevelopmentRegion\</key\>" \
+	"\\n\\t\<string\>en\</string\>" \
+	"\\n\\t\<key\>CFBundleExecutable\</key\>" \
+	"\\n\\t\<string\>$(TARGET)\</string\>" \
+	"\\n\\t\<key\>CFBundleIconFile\</key\>" \
+	"\\n\\t\<string\>\</string\>" \
+	"\\n\\t\<key\>CFBundleIdentifier\</key\>" \
+	"\\n\\t\<string\>com.frustuminteractive\</string\>" \
+	"\\n\\t\<key\>CFBundleInfoDictionaryVersion\</key\>" \
+	"\\n\\t\<string\>6.0\</string\>" \
+	"\\n\\t\<key\>CFBundleName\</key\>" \
+	"\\n\\t\<string\>$(TARGET)\</string\>" \
+	"\\n\\t\<key\>CFBundlePackageType\</key\>" \
+	"\\n\\t\<string\>APPL\</string\>" \
+	"\\n\\t\<key\>CFBundleShortVersionString\</key\>" \
+	"\\n\\t\<string\>1.0\</string\>" \
+	"\\n\\t\<key\>CFBundleSignature\</key\>" \
+	"\\n\\t\<string\>????\</string\>" \
+	"\\n\\t\<key\>CFBundleVersion\</key\>" \
+	"\\n\\t\<string\>1\</string\>" \
+	"\\n\\t\<key\>LSApplicationCategoryType\</key\>" \
+	"\\n\\t\<string\>public.app-category.games\</string\>" \
+	"\\n\\t\<key\>NSHumanReadableCopyright\</key\>" \
+	"\\n\\t\<string\>Copyright © 2015 Roger Dass. All rights reserved.\</string\>" \
+	"\\n\\t\<key\>NSMainNibFile\</key\>" \
+	"\\n\\t\<string\>MainMenu\</string\>" \
+	"\\n\\t\<key\>NSPrincipalClass\</key\>" \
+	"\\n\\t\<string\>NSApplication\</string\>" \
+	"\\n\</dict\>" \
+	"\\n\</plist\>"
+
+POSTBUILD:=\
+	mkdir $(TARGET).app && \
+	mkdir $(TARGET).app/Contents && \
+	mkdir $(TARGET).app/Contents/MacOS && \
+	mkdir $(TARGET).app/Contents/Resources && \
+	echo "$(INFOPLIST)" >$(TARGET).app/Contents/Info.plist && \
+	$(foreach x, $(RESOURCES), cp -r $(x) $(TARGET).app/Contents/MacOS/;) \
+	cp $(TARGET) $(TARGET).app/Contents/MacOS/
+
+POSTBUILDCLEAN:= \
+	rm -rf $(TARGET).app/
