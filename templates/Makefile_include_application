@@ -1,6 +1,6 @@
 SOURCEDIR?=src
 TOPDIR?=../..
-INCDIR+=-I./include -I/usr/include
+INCDIR+=-I./include -I/usr/include -I$(TOPDIR)/projects
 LIBDIR+=-L/usr/lib
 
 CXX=g++

@@ -4,7 +4,7 @@
 
 SOURCEDIR?=src
 TOPDIR?=../..
-INCDIR+=-I./include -I/usr/include
+INCDIR+=-I../ -I./include -I/usr/include
 LIBDIR+=-L/usr/lib
 
 CC=gcc
@@ -20,7 +20,7 @@ DEFINES?=
 LIBS=$(LIBS_LINUX)
 
 ### Tool / OS specific substitutions
-RM=rm -f
+RM=rm -rf
 CP=cp -f
 SLASH=/
 CMDSEP=;
@@ -101,7 +101,8 @@ endif
 
 
 ### Set path for output object files
-OBJDIR=obj
+OUTDIR=build
+OBJDIR=$(OUTDIR)/obj
 OBJECTS=$(patsubst %, $(OBJDIR)/%, $(C_FILES:.c=.o))
 OBJECTS+=$(patsubst %, $(OBJDIR)/%, $(CXX_FILES:.cpp=.o))
 OBJECTS+=$(patsubst %, $(OBJDIR)/%, $(OBJC_FILES:.m=.o))
@@ -112,28 +113,32 @@ all: init $(TARGET) finish
 
 $(OBJDIR)/%.o: $(SOURCEDIR)/%.c
 	@echo ""
-	@echo " Compile:"				
+	@echo " Compile:"
+	mkdir -p $(dir $@)
 	$(CXX) $(CCFLAGS) $(DEFINES) -c -o $@ $<
 
 $(OBJDIR)/%.o: $(SOURCEDIR)/%.cpp
 	@echo ""
-	@echo " Compile:"				
+	@echo " Compile:"
+	mkdir -p $(dir $@)
 	$(CXX) $(CCFLAGS) $(CXXFLAGS) $(DEFINES) -c -o $@ $<
 
 $(OBJDIR)/%.o: $(SOURCEDIR)/%.m
 	@echo ""
-	@echo " Compile:"				
+	@echo " Compile:"
+	mkdir -p $(dir $@)
 	$(CXX) $(OBJCFLAGS) $(DEFINES) -c -o $@ $<
 
 $(OBJDIR)/%.o: $(SOURCEDIR)/%.mm
 	@echo ""
-	@echo " Compile:"				
+	@echo " Compile:"
+	mkdir -p $(dir $@)
 	$(CXX) $(OBJCXXFLAGS) $(DEFINES) -c -o $@ $<
 
 $(TARGET): $(OBJECTS)
 	@echo ""
 	@echo " Building static library:"
-	ar rcs $@ $^
+	ar rcs $(OUTDIR)/$@ $^
 
 init:
 	@echo ""
@@ -147,7 +152,7 @@ init:
 finish: 
 	@echo ""
 	@echo " Copying library:"
-	$(CP) $(TARGET) ..$(SLASH)..$(SLASH)lib
+	$(CP) $(OUTDIR)$(SLASH)$(TARGET) $(TOPDIR)$(SLASH)lib
 	@echo ""
 	$(POSTBUILD)
 	@echo ""
@@ -158,10 +163,10 @@ finish:
 
 clean:
 	$(RM) $(CLEAN_TARGET)
-	$(RM) $(OBJDIR)$(SLASH)*.o
+	$(RM) $(OUTDIR)
 	$(RM) core.*
 	$(RM) include$(SLASH)*
 	$(RM) src$(SLASH)moc_*
-	$(RM) ..$(SLASH)..$(SLASH)lib$(SLASH)$(TARGET)
+	$(RM) $(TOPDIR)$(SLASH)lib$(SLASH)$(TARGET)
 	$(POSTBUILDCLEAN)
 
