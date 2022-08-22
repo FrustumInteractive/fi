@@ -110,6 +110,13 @@ LIBDIR+=$(patsubst %, -L%/lib, $(DEPENDENCIES))
 		
 all: dependencies init $(TARGET) finish
 
+debug: CXXFLAGS += -g
+debug: DEFINES += -D_DEBUG
+debug: dependencies init $(TARGET) finish
+
+release: CXXFLAGS += -O2
+release: dependencies init $(TARGET) finish
+
 
 $(OBJDIR)/%.o: $(SOURCEDIR)/%.c
 	@echo ""

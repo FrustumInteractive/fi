@@ -110,6 +110,12 @@ OBJECTS+=$(patsubst %, $(OBJDIR)/%, $(OBJCXX_FILES:.mm=.o))
 		
 all: init $(TARGET) finish
 
+debug: CXXFLAGS += -g
+debug: DEFINES += -D_DEBUG
+debug: init $(TARGET) finish
+
+release: CXXFLAGS += -O2
+release: init $(TARGET) finish
 
 $(OBJDIR)/%.o: $(SOURCEDIR)/%.c
 	@echo ""
