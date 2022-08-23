@@ -4,13 +4,13 @@
 
 SOURCEDIR?=src
 TOPDIR?=../..
-INCDIR+=-I../ -I./include -I/usr/include
+INCDIR+=-I../ -I./include -I/usr/include -I$(TOPDIR)/extern
 LIBDIR+=-L/usr/lib
 
 CC=gcc
 CXX=g++
 CCFLAGS+=$(INCDIR) -Wall
-CXXFLAGS+=-std=c++11 $(EXTRACXXFLAGS)
+CXXFLAGS+=-std=c++17 $(EXTRACXXFLAGS)
 OBJCFLAGS+=$(INCDIR) -fmodules
 OBJCXXFLAGS+=$(INCDIR) $(CXXFLAGS) -fmodules
 LDFLAGS+=$(LIBDIR)
