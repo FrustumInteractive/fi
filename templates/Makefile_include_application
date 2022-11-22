@@ -23,13 +23,13 @@ CMDSEP=;
 
 ### Operating system specific defines, etc.
 ifeq ($(OS),Windows_NT)
-    DEFINES += -DWIN32
-    ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
-        DEFINES += -DAMD64
-    endif
-    ifeq ($(PROCESSOR_ARCHITECTURE),x86)
-        DEFINES += -DIA32
-    endif
+	DEFINES += -DWIN32
+	ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
+		DEFINES += -DAMD64
+	endif
+	ifeq ($(PROCESSOR_ARCHITECTURE),x86)
+		DEFINES += -DIA32
+	endif
 
 	LIBS=$(LIBS_W32)
 	CLEAN_TARGET=$(TARGET).exe
@@ -37,7 +37,7 @@ ifeq ($(OS),Windows_NT)
 	CXX_FILES += $(CXX_FILES_WIN)
 	INCDIR +=\
 		-I$(TOPDIR)/extern/glew-1.13.0/include
-    LIBDIR +=\
+	LIBDIR +=\
 		-L$(TOPDIR)/extern/glew-1.13.0/lib/release/win32
 	DEPTEMP := $(DEP_WIN32)
 	DEPTEMP += $(DEPENDENCIES)
@@ -53,13 +53,13 @@ endif
 
 else
 	UNAME_S := $(shell uname -s)
-    ifeq ($(UNAME_S),Linux)
+	ifeq ($(UNAME_S),Linux)
 		DEFINES += -DLINUX
 		C_FILES += $(C_FILES_LINUX)
 		CXX_FILES += $(CXX_FILES_LINUX)
 		LIBDIR+=-L/usr/lib/x86-linux-gnu
 		DEPENDENCIES += $(DEP_LINUX)
-    endif
+	endif
 
 	ifeq ($(UNAME_S),Darwin)
 		LIBS=$(LIBS_OSX)
@@ -72,17 +72,17 @@ else
 		DEPENDENCIES += $(DEP_OSX)
 		# include recipe text to make .app package
 		include $(TOPDIR)/templates/Makefile_include_osx
-    endif
+	endif
 	UNAME_P := $(shell uname -p)
-    ifeq ($(UNAME_P),x86_64)
+	ifeq ($(UNAME_P),x86_64)
 		DEFINES += -DAMD64
-    endif
-    ifneq ($(filter %86,$(UNAME_P)),)
+	endif
+	ifneq ($(filter %86,$(UNAME_P)),)
 		DEFINES += -DIA32
-    endif
-    ifneq ($(filter arm%,$(UNAME_P)),)
+	endif
+	ifneq ($(filter arm%,$(UNAME_P)),)
 		DEFINES += -DARM
-    endif
+	endif
 endif
 
 ifdef DEBUG
@@ -107,7 +107,6 @@ OBJECTS+=$(patsubst %, $(OBJDIR)/%, $(OBJCXX_FILES:.mm=.o))
 INCDIR+=$(patsubst %, -I%/inc, $(DEPENDENCIES))
 LIBDIR+=$(patsubst %, -L%/lib, $(DEPENDENCIES))
 
-		
 all: dependencies init $(TARGET) finish
 
 debug: CXXFLAGS += -g
@@ -174,6 +173,5 @@ clean:
 	$(RM) $(CLEAN_TARGET)
 	$(RM) $(OBJDIR)$(SLASH)*.o
 	$(RM) core.*
-	$(RM) include$(SLASH)*
 	$(RM) src$(SLASH)moc_*
 	$(POSTBUILDCLEAN)
