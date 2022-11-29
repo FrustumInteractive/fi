@@ -1,6 +1,6 @@
 SOURCEDIR?=src
 TOPDIR?=../..
-INCDIR+=-I./include -I/usr/include -I$(TOPDIR)/projects -I$(TOPDIR)/extern
+INCDIR+=-I./include -I/usr/include -I$(TOPDIR)/include -I$(TOPDIR)/projects -I$(TOPDIR)/extern
 LIBDIR+=-L/usr/lib
 
 CXX=g++
@@ -119,22 +119,26 @@ release: dependencies init $(TARGET) finish
 
 $(OBJDIR)/%.o: $(SOURCEDIR)/%.c
 	@echo ""
-	@echo " Compile:"				
+	@echo " Compile:"
+	mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(DEFINES) -c -o $@ $<
 
 $(OBJDIR)/%.o: $(SOURCEDIR)/%.cpp
 	@echo ""
-	@echo " Compile:"				
+	@echo " Compile:"
+	mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(DEFINES) -c -o $@ $<
 
 $(OBJDIR)/%.o: $(SOURCEDIR)/%.m
 	@echo ""
-	@echo " Compile:"				
+	@echo " Compile:"
+	mkdir -p $(dir $@)
 	$(CXX) $(OBJCFLAGS) $(DEFINES) -c -o $@ $<
 
 $(OBJDIR)/%.o: $(SOURCEDIR)/%.mm
 	@echo ""
-	@echo " Compile:"				
+	@echo " Compile:"
+	mkdir -p $(dir $@)
 	$(CXX) $(OBJCXXFLAGS) $(DEFINES) -c -o $@ $<
 
 $(TARGET): $(OBJECTS)
