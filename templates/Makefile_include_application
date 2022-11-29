@@ -16,7 +16,7 @@ LIBS=$(LIBS_LINUX)
 RESOURCES?=
 
 ### Tool / OS specific substitutions
-RM=rm -f
+RM=rm -rf
 CP=cp
 SLASH=/
 CMDSEP=;
@@ -175,7 +175,7 @@ deepclean: $(DEPENDENCIES) clean
 
 clean:
 	$(RM) $(CLEAN_TARGET)
-	$(RM) $(OBJDIR)$(SLASH)*.o
+	$(RM) $(OBJDIR)
 	$(RM) core.*
 	$(RM) src$(SLASH)moc_*
 	$(POSTBUILDCLEAN)

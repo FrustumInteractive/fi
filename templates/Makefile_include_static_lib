@@ -158,7 +158,9 @@ init:
 finish: 
 	@echo ""
 	@echo " Copying library:"
+	mkdir -p lib
 	$(CP) $(OUTDIR)$(SLASH)$(TARGET) $(TOPDIR)$(SLASH)lib
+	$(CP) $(OUTDIR)$(SLASH)$(TARGET) lib
 	@echo ""
 	$(POSTBUILD)
 	@echo ""
@@ -170,6 +172,7 @@ finish:
 clean:
 	$(RM) $(CLEAN_TARGET)
 	$(RM) $(OUTDIR)
+	$(RM) lib
 	$(RM) core.*
 	$(RM) src$(SLASH)moc_*
 	$(RM) $(TOPDIR)$(SLASH)lib$(SLASH)$(TARGET)
