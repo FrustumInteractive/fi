@@ -149,7 +149,7 @@ $(TARGET): $(OBJECTS)
 dependencies: $(DEPENDENCIES)
 	@echo ""
 	@echo " Building prerequesite project: $^"
-	$(foreach x, $^, $(MAKE) -C $(x)$(CMDSEP))
+	$(foreach x, $^, $(MAKE) -C $(x) $(MAKECMDGOALS)$(CMDSEP))
 
 init:
 	@echo ""
