@@ -19,6 +19,9 @@ OBJCXX_FILES=
 #OBJC_FILES_OSX
 #OBJCXX_FILES_OSX
 
+### Tests
+T_DIR=test/scene
+
 ### Targets / Output / Resource folders and files
 TARGET=staticlib.a
 CLEAN_TARGET=$(TARGET)

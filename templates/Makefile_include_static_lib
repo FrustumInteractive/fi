@@ -146,6 +146,17 @@ $(TARGET): $(OBJECTS)
 	@echo " Building static library:"
 	ar rcs $(OUTDIR)/$@ $^
 
+
+.PHONY: test
+
+test:
+	@echo ""
+	@echo "*************************************"
+	@echo " Building test: "
+	@echo "*************************************"
+	@echo ""
+	$(MAKE) -C test
+
 init:
 	@echo ""
 	@echo "*************************************"
@@ -154,8 +165,8 @@ init:
 	@echo ""
 	@echo " Executing post build clean commands..."
 	@$(POSTBUILDCLEAN)
-	
-finish: 
+
+finish:
 	@echo ""
 	@echo " Copying library:"
 	mkdir -p lib
@@ -177,4 +188,5 @@ clean:
 	$(RM) src$(SLASH)moc_*
 	$(RM) $(TOPDIR)$(SLASH)lib$(SLASH)$(TARGET)
 	$(POSTBUILDCLEAN)
+	$(MAKE) -C test clean
 

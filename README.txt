@@ -23,6 +23,10 @@ Linux
 -----
 latest GCC should be installed.
 In ubuntu 'sudo apt-get install build-essential' should work.
+other deps:
+  sudo apt install libx11-dev
+  sudo apt install mesa-common-dev
+
 Hardware accellerated graphics drivers with at least OpenGL 3.2 support are required
 development libraries for those drivers are also needed. 
 
