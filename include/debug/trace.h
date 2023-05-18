@@ -10,6 +10,7 @@
 
 // --- debug / logging
 namespace FI {
+
 inline void _MSG()
 {
 	std::cout << std::endl << std::flush;
@@ -18,8 +19,8 @@ inline void _MSG()
 template<typename Head, typename... Args>
 inline void _MSG(const Head& head, const Args&... args )
 {
-    std::cout << head << " ";
-    _MSG(args...);
+	std::cout << head << " ";
+	_MSG(args...);
 }
 
 inline void _THROW( const std::string fn, const std::string desc )
@@ -28,16 +29,15 @@ inline void _THROW( const std::string fn, const std::string desc )
 	throw std::invalid_argument(s);
 }
 
-
 #define THROW(x)    _THROW(__PRETTY_FUNCTION__,x)
 
 // exmple without using macro - but need to get calling fn name somehow...
 //template<typename... Args> inline void DEBUG(Args&&... args)	{ _MSG(__PRETTY_FUNCTION__, ": ", std::forward<Args>(args)...); }
 
-#define TRACE(...)	_MSG(__PRETTY_FUNCTION__, ": ", __VA_ARGS__)
-#define LOG(...)	_MSG(__FUNCTION__, ": ", __VA_ARGS__)
-#define PRINT(...)	_MSG(__VA_ARGS__)
-	
+#define TRACE(...)   _MSG(__PRETTY_FUNCTION__, ": ", __VA_ARGS__)
+#define LOG(...)     _MSG(__FUNCTION__, ": ", __VA_ARGS__)
+#define PRINT(...)   _MSG(__VA_ARGS__)
+
 class ScopeTimer
 {
 public:
