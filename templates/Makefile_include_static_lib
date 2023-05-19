@@ -170,7 +170,6 @@ finish:
 	@echo ""
 	@echo " Copying library:"
 	mkdir -p lib
-	$(CP) $(OUTDIR)$(SLASH)$(TARGET) $(TOPDIR)$(SLASH)lib
 	$(CP) $(OUTDIR)$(SLASH)$(TARGET) lib
 	@echo ""
 	$(POSTBUILD)
