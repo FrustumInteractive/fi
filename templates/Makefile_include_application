@@ -58,7 +58,9 @@ else
 		DEFINES += -DLINUX
 		C_FILES += $(C_FILES_LINUX)
 		CXX_FILES += $(CXX_FILES_LINUX)
-		LIBDIR+=-L/usr/lib/x86-linux-gnu
+		LIBDIR+=\
+			-L/usr/lib/x86-linux-gnu \
+			-L/usr/lib/x86_64-linux-gnu
 		DEPENDENCIES += $(DEP_LINUX)
 	endif
 
