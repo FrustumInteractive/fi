@@ -8,9 +8,9 @@ INCDIR+=-I../ -I./include -I/usr/include -I$(TOPDIR)/extern
 LIBDIR+=-L/usr/lib
 
 CC=gcc
-CXX=g++
 CCFLAGS+=$(INCDIR) -Wall
-CXXFLAGS+=-std=c++17 $(EXTRACXXFLAGS)
+CXX=g++
+CXXFLAGS+=$(INCDIR) -std=c++17 $(EXTRACXXFLAGS)
 OBJCFLAGS+=$(INCDIR) -fmodules
 OBJCXXFLAGS+=$(INCDIR) $(CXXFLAGS) -fmodules
 LDFLAGS+=$(LIBDIR)
@@ -121,13 +121,13 @@ $(OBJDIR)/%.o: $(SOURCEDIR)/%.c
 	@echo ""
 	@echo " Compile:"
 	mkdir -p $(dir $@)
-	$(CXX) $(CCFLAGS) $(DEFINES) -c -o $@ $<
+	$(CC) $(CCFLAGS) $(DEFINES) -c -o $@ $<
 
 $(OBJDIR)/%.o: $(SOURCEDIR)/%.cpp
 	@echo ""
 	@echo " Compile:"
 	mkdir -p $(dir $@)
-	$(CXX) $(CCFLAGS) $(CXXFLAGS) $(DEFINES) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) $(DEFINES) -c -o $@ $<
 
 $(OBJDIR)/%.o: $(SOURCEDIR)/%.m
 	@echo ""

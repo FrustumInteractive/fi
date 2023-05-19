@@ -3,6 +3,7 @@ TOPDIR?=../..
 INCDIR+=-I./include -I/usr/include -I$(TOPDIR)/include -I$(TOPDIR)/projects -I$(TOPDIR)/extern
 LIBDIR+=-L/usr/lib
 
+CC=gcc
 CXX=g++
 CXXFLAGS+=$(INCDIR) -Wall -std=c++17 $(EXTRACXXFLAGS)
 OBJCFLAGS+=$(INCDIR) -fmodules
@@ -73,6 +74,7 @@ else
 		# include recipe text to make .app package
 		include $(TOPDIR)/templates/Makefile_include_osx
 	endif
+
 	UNAME_P := $(shell uname -p)
 	ifeq ($(UNAME_P),x86_64)
 		DEFINES += -DAMD64
@@ -104,7 +106,7 @@ OBJECTS+=$(patsubst %, $(OBJDIR)/%, $(OBJCXX_FILES:.mm=.o))
 
 
 ### add include & lib path from dependencies
-INCDIR+=$(patsubst %, -I%/inc, $(DEPENDENCIES))
+INCDIR+=$(patsubst %, -I%/include, $(DEPENDENCIES))
 LIBDIR+=$(patsubst %, -L%/lib, $(DEPENDENCIES))
 
 all: dependencies init $(TARGET) finish
@@ -121,7 +123,7 @@ $(OBJDIR)/%.o: $(SOURCEDIR)/%.c
 	@echo ""
 	@echo " Compile:"
 	mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) $(DEFINES) -c -o $@ $<
+	$(CC) $(CXXFLAGS) $(DEFINES) -c -o $@ $<
 
 $(OBJDIR)/%.o: $(SOURCEDIR)/%.cpp
 	@echo ""
