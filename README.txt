@@ -35,7 +35,7 @@ General
 -------
 To checkout projects:
   'cd projects' [you should be in /DEV/fi/projects/ for example.]
-  'git clone http://username@fi.publicvm.com/git/<reponame>.git reponame'
+  'git clone git@github.com:FrustumInteractive/<project_name>.git'
 
 its important to keep the same reponame for your repo since the build system will look for it in
 the directory structure.
@@ -48,17 +48,14 @@ When inside the project directory you can use some shell script tools:
 
 Projects
 --------
-when in projects folder:
-  git clone http://<YourUserName>@fi.publicvm.com/git/gfxApp.git gfxApp (x-platform applications)
-  git clone http://<YourUserName>@fi.publicvm.com/git/gfxAPI.git gfxAPI (d3d/OGL rendering api abstraction)
-  git clone http://<YourUserName>@fi.publicvm.com/git/fiMath.git fiMath (matrices/vectors)
-  git clone http://<YourUserName>@fi.publicvm.com/git/gfxScene.git gfxScene (scene loader with octrees)
-  git clone http://<YourUserName>@fi.publicvm.com/git/gfxImage.git gfxImage (textures/images)
-  git clone http://<yourUserName>@fi.publicvm.com/git/gfxUI.git gfxUI (user interface framework)
+example repos when in projects folder:
+  git@github.com:FrustumInteractive/fiApp.git (x-platform applications)
+  git@github.com:FrustumInteractive/fiMath.git (matrices/vectors)
+
 
 The above repos are for some of the static libs that comprise the FI codebase.
 Inside each checked out directory, there is typically a 'test' folder. Calling 'make' inside
-the test folder should build and executible which tests the funtionality of that library.
+the test folder should build an executible which tests the funtionality of that library.
 Any subsequent library creation should follow this scheme.
 
 
@@ -66,6 +63,6 @@ Makefiles
 --------- 
 inside templates/ folder there are makefile templates.
 To build a new application, templates/Makefile_application can be copied to the new project's folder
-  ex: cp ../../templates/makefile_application Makefile
+  `ex: cp ../../templates/makefile_application Makefile`
 This new makefile can then be edited to add general source files, platform specific source, library dependencies,
 and triggering library dependencies to be built ('DEPENDENCIES').
