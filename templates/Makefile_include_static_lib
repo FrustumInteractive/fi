@@ -108,6 +108,9 @@ OBJECTS+=$(patsubst %, $(OBJDIR)/%, $(CXX_FILES:.cpp=.o))
 OBJECTS+=$(patsubst %, $(OBJDIR)/%, $(OBJC_FILES:.m=.o))
 OBJECTS+=$(patsubst %, $(OBJDIR)/%, $(OBJCXX_FILES:.mm=.o))
 
+### add include & lib path from dependencies
+INCDIR+=$(patsubst %, -I%/include, $(DEPENDENCIES))
+
 all: init $(TARGET) finish
 
 debug: CXXFLAGS += -g
