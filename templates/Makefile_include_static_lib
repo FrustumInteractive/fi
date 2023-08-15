@@ -4,7 +4,7 @@
 
 SOURCEDIR?=src
 TOPDIR?=../..
-INCDIR+=-I../ -I./include -I/usr/include -I$(TOPDIR)/extern
+INCDIR+=-I../ -I./include -I/usr/include -I./external -I$(TOPDIR)/external
 LIBDIR+=-L/usr/lib
 
 CC=gcc
@@ -172,8 +172,8 @@ init:
 finish:
 	@echo ""
 	@echo " Copying library:"
-	mkdir -p lib
-	$(CP) $(OUTDIR)$(SLASH)$(TARGET) lib
+	mkdir -p $(TOPDIR)$(SLASH)lib
+	$(CP) $(OUTDIR)$(SLASH)$(TARGET) $(TOPDIR)$(SLASH)lib$(SLASH)
 	@echo ""
 	$(POSTBUILD)
 	@echo ""
