@@ -24,9 +24,23 @@ inline std::string incrementName(const std::string& name)
 	{
 		std::string prefix = name.substr(0, split);
 		std::string suffix = name.substr(split, name.length());
-		return prefix + std::to_string(std::stoi(suffix) + 1);
+		return prefix + "_" + std::to_string(std::stoi(suffix) + 1);
 	}
-	return name + "2";
+	return name + "_2";
+}
+
+inline std::string commaSeparatedNumber(int number)
+{
+	auto s = std::to_string(number);
+
+	int n = s.length() - 3;
+	int end = (number >= 0) ? 0 : 1; // Support for negative numbers
+	while (n > end)
+	{
+		s.insert(n, ",");
+		n -= 3;
+	}
+	return s;
 }
 
 #ifdef __ANDROID_API__
