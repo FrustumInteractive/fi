@@ -33,7 +33,7 @@ inline std::string commaSeparatedNumber(int number)
 {
 	auto s = std::to_string(number);
 
-	int n = s.length() - 3;
+	int n = (int)s.length() - 3;
 	int end = (number >= 0) ? 0 : 1; // Support for negative numbers
 	while (n > end)
 	{
