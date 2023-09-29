@@ -25,13 +25,13 @@ CMDSEP=;
 
 ### Operating system specific defines, etc.
 ifdef WEB
-	DEFINES +=-DWEB $(CXXFLAGS_WEB)
+	DEFINES +=-DWEB -D_GLES2 $(CXXFLAGS_WEB)
 	C_FILES +=$(C_FILES_WEB)
 	CXX_FILES +=$(CXX_FILES_WEB)
 	DEPENDENCIES +=$(DEP_WEB)
 	CXXFLAGS =$(INCDIR) -std=c++17 -s USE_SDL=2 -O3 $(EXTRACXXFLAGS)
 	LIBS=$(LIBS_WEB)
-	LDFLAGS +=$(LIBDIR) -s WASM=1 -s USE_SDL=2 -O3 --emrun
+	LDFLAGS +=$(LIBDIR) -s WASM=1 -s USE_SDL=2 -O3 -s ALLOW_MEMORY_GROWTH --emrun --preload-file assets
 	CC =emcc
 	CXX =emcc
 else
@@ -185,7 +185,8 @@ finish:
 	@echo ""
 ifeq ($(WEB), 1)
 	@echo " Moving binary and JavaScript file to web folder:"
-	$(MV) $(TARGET) $(TARGET).wasm web$(SLASH)
+	mkdir -p web
+	$(MV) $(TARGET) $(TARGET).wasm $(TARGET).data web$(SLASH)
 	@echo ""
 endif
 	@echo " Executing post build commands..."
@@ -202,6 +203,7 @@ deepclean: $(DEPENDENCIES) clean
 clean:
 	$(RM) $(CLEAN_TARGET)
 	$(RM) web$(SLASH)$(CLEAN_TARGET).wasm
+	$(RM) web$(SLASH)$(CLEAN_TARGET).data
 	$(RM) web$(SLASH)$(CLEAN_TARGET)
 	$(RM) $(OBJDIR)
 	$(RM) core.*
