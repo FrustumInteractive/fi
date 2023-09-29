@@ -24,70 +24,83 @@ RM=rm -rf
 CP=cp -f
 SLASH=/
 CMDSEP=;
+AR=ar rcs
 
 ### Operating system specific defines, etc.
-ifeq ($(OS),Windows_NT)
-	DEFINES += -DWIN32 $(CXXFLAGS_WIN)
-	ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
-		DEFINES += -DAMD64
-	endif
-	ifeq ($(PROCESSOR_ARCHITECTURE),x86)
-		DEFINES += -DIA32
-	endif
-
-	LIBS=$(LIBS_W32)
-	CLEAN_TARGET=$(TARGET)
-	C_FILES += $(C_FILES_WIN)
-	CXX_FILES += $(CXX_FILES_WIN)
-	INCDIR +=\
-		-I$(TOPDIR)/extern/glew-1.13.0/include
-	LIBDIR +=\
-		-L$(TOPDIR)/extern/glew-1.13.0/lib/release/win32
-	DEPTEMP := $(DEP_WIN32)
-	DEPTEMP += $(DEPENDENCIES)
-	DEPENDENCIES := $(DEPTEMP)
-	
-ifndef BASH_EMU
-	DEPENDENCIES := $(subst /,\\, $(DEPENDENCIES))
-	RM=del /F /Q
-	CP=copy
-	SLASH=\\
-	CMDSEP=&
-endif
-
+ifdef WEB
+	DEFINES +=-DWEB $(CXXFLAGS_WEB)
+	C_FILES +=$(C_FILES_WEB)
+	CXX_FILES +=$(CXX_FILES_WEB)
+	DEPENDENCIES +=$(DEP_WEB)
+	CXXFLAGS =$(INCDIR) -std=c++17 -s USE_SDL=2 -O3 $(EXTRACXXFLAGS)
+	LIBS=$(LIBS_WEB)
+	LDFLAGS +=$(LIBDIR) -s WASM=1 -s USE_SDL=2 -O3 --emrun
+	CC =emcc
+	CXX =emcc
+	AR =emar rcs
 else
-	UNAME_S := $(shell uname -s)
-	ifeq ($(UNAME_S),Linux)
-		DEFINES += -DLINUX $(CXXFLAGS_LINUX)
-		C_FILES += $(C_FILES_LINUX)
-		CXX_FILES += $(CXX_FILES_LINUX)
-		LIBDIR+=-L/usr/lib/x86-linux-gnu
-		DEPENDENCIES += $(DEP_LINUX)
-		OBJCXXFLAGS =
-		OBJCXX_FILES = 
-	endif
+	ifeq ($(OS),Windows_NT)
+		DEFINES += -DWIN32 $(CXXFLAGS_WIN)
+		ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
+			DEFINES += -DAMD64
+		endif
+		ifeq ($(PROCESSOR_ARCHITECTURE),x86)
+			DEFINES += -DIA32
+		endif
 
-	ifeq ($(UNAME_S),Darwin)
-		LIBS=$(LIBS_OSX)
-		DEFINES += -DOSX $(CXXFLAGS_OSX)
-		C_FILES += $(C_FILES_OSX)
-		CXX_FILES += $(CXX_FILES_OSX)
-		OBJC_FILES += $(OBJC_FILES_OSX)
-		OBJCXX_FILES += $(OBJCXX_FILES_OSX)
-		LIBDIR+=
-		DEPENDENCIES += $(DEP_OSX)
-	endif
-	UNAME_P := $(shell uname -p)
-	ifeq ($(UNAME_P),x86_64)
-		DEFINES += -DAMD64
-	endif
-	ifneq ($(filter %86,$(UNAME_P)),)
-		DEFINES += -DIA32
-	endif
-	ifneq ($(filter arm%,$(UNAME_P)),)
-		DEFINES += -DARM
-	endif
-endif
+		LIBS=$(LIBS_W32)
+		CLEAN_TARGET=$(TARGET)
+		C_FILES += $(C_FILES_WIN)
+		CXX_FILES += $(CXX_FILES_WIN)
+		INCDIR +=\
+			-I$(TOPDIR)/extern/glew-1.13.0/include
+		LIBDIR +=\
+			-L$(TOPDIR)/extern/glew-1.13.0/lib/release/win32
+		DEPTEMP := $(DEP_WIN32)
+		DEPTEMP += $(DEPENDENCIES)
+		DEPENDENCIES := $(DEPTEMP)
+
+		ifndef BASH_EMU
+			DEPENDENCIES := $(subst /,\\, $(DEPENDENCIES))
+			RM=del /F /Q
+			CP=copy
+			SLASH=\\
+			CMDSEP=&
+		endif
+	else
+		UNAME_S := $(shell uname -s)
+		ifeq ($(UNAME_S),Linux)
+			DEFINES += -DLINUX $(CXXFLAGS_LINUX)
+			C_FILES += $(C_FILES_LINUX)
+			CXX_FILES += $(CXX_FILES_LINUX)
+			LIBDIR+=-L/usr/lib/x86-linux-gnu
+			DEPENDENCIES += $(DEP_LINUX)
+			OBJCXXFLAGS =
+			OBJCXX_FILES = 
+		endif
+
+		ifeq ($(UNAME_S),Darwin)
+			LIBS=$(LIBS_OSX)
+			DEFINES += -DOSX $(CXXFLAGS_OSX)
+			C_FILES += $(C_FILES_OSX)
+			CXX_FILES += $(CXX_FILES_OSX)
+			OBJC_FILES += $(OBJC_FILES_OSX)
+			OBJCXX_FILES += $(OBJCXX_FILES_OSX)
+			LIBDIR+=
+			DEPENDENCIES += $(DEP_OSX)
+		endif
+		UNAME_P := $(shell uname -p)
+		ifeq ($(UNAME_P),x86_64)
+			DEFINES += -DAMD64
+		endif
+		ifneq ($(filter %86,$(UNAME_P)),)
+			DEFINES += -DIA32
+		endif
+		ifneq ($(filter arm%,$(UNAME_P)),)
+			DEFINES += -DARM
+		endif
+	endif ### windows
+endif ### web
 
 ifdef DEBUG
 	CXXFLAGS += -g
@@ -152,7 +165,7 @@ $(OBJDIR)/%.o: $(SOURCEDIR)/%.mm
 $(TARGET): $(OBJECTS)
 	@echo ""
 	@echo " Building static library:"
-	ar rcs $(OUTDIR)/$@ $^
+	$(AR) $(OUTDIR)/$@ $^
 
 
 .PHONY: test
@@ -179,6 +192,8 @@ finish:
 	@echo " Copying library:"
 	mkdir -p $(TOPDIR)$(SLASH)lib
 	$(CP) $(OUTDIR)$(SLASH)$(TARGET) $(TOPDIR)$(SLASH)lib$(SLASH)
+	mkdir -p lib
+	$(CP) $(OUTDIR)$(SLASH)$(TARGET) lib/
 	@echo ""
 	$(POSTBUILD)
 	@echo ""

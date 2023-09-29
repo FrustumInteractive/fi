@@ -19,75 +19,88 @@ RESOURCES?=
 ### Tool / OS specific substitutions
 RM=rm -rf
 CP=cp
+MV=mv
 SLASH=/
 CMDSEP=;
 
 ### Operating system specific defines, etc.
-ifeq ($(OS),Windows_NT)
-	DEFINES += -DWIN32
-	ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
-		DEFINES += -DAMD64
-	endif
-	ifeq ($(PROCESSOR_ARCHITECTURE),x86)
-		DEFINES += -DIA32
-	endif
-
-	LIBS=$(LIBS_W32)
-	CLEAN_TARGET=$(TARGET).exe
-	C_FILES += $(C_FILES_WIN)
-	CXX_FILES += $(CXX_FILES_WIN)
-	INCDIR +=\
-		-I$(TOPDIR)/extern/glew-1.13.0/include
-	LIBDIR +=\
-		-L$(TOPDIR)/extern/glew-1.13.0/lib/release/win32
-	DEPTEMP := $(DEP_WIN32)
-	DEPTEMP += $(DEPENDENCIES)
-	DEPENDENCIES := $(DEPTEMP)
-	
-ifndef BASH_EMU
-	DEPENDENCIES := $(subst /,\\, $(DEPENDENCIES))
-	RM=del /F /Q
-	CP=copy
-	SLASH=\\
-	CMDSEP=&
-endif
-
+ifdef WEB
+	DEFINES +=-DWEB $(CXXFLAGS_WEB)
+	C_FILES +=$(C_FILES_WEB)
+	CXX_FILES +=$(CXX_FILES_WEB)
+	DEPENDENCIES +=$(DEP_WEB)
+	CXXFLAGS =$(INCDIR) -std=c++17 -s USE_SDL=2 -O3 $(EXTRACXXFLAGS)
+	LIBS=$(LIBS_WEB)
+	LDFLAGS +=$(LIBDIR) -s WASM=1 -s USE_SDL=2 -O3 --emrun
+	CC =emcc
+	CXX =emcc
 else
-	UNAME_S := $(shell uname -s)
-	ifeq ($(UNAME_S),Linux)
-		DEFINES += -DLINUX
-		C_FILES += $(C_FILES_LINUX)
-		CXX_FILES += $(CXX_FILES_LINUX)
-		LIBDIR+=\
-			-L/usr/lib/x86-linux-gnu \
-			-L/usr/lib/x86_64-linux-gnu
-		DEPENDENCIES += $(DEP_LINUX)
+	ifeq ($(OS),Windows_NT)
+		DEFINES += -DWIN32
+		ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
+			DEFINES += -DAMD64
+		endif
+		ifeq ($(PROCESSOR_ARCHITECTURE),x86)
+			DEFINES += -DIA32
+		endif
+
+		LIBS=$(LIBS_W32)
+		CLEAN_TARGET=$(TARGET).exe
+		C_FILES += $(C_FILES_WIN)
+		CXX_FILES += $(CXX_FILES_WIN)
+		INCDIR +=\
+			-I$(TOPDIR)/extern/glew-1.13.0/include
+		LIBDIR +=\
+			-L$(TOPDIR)/extern/glew-1.13.0/lib/release/win32
+		DEPTEMP := $(DEP_WIN32)
+		DEPTEMP += $(DEPENDENCIES)
+		DEPENDENCIES := $(DEPTEMP)
+		
+	ifndef BASH_EMU
+		DEPENDENCIES := $(subst /,\\, $(DEPENDENCIES))
+		RM=del /F /Q
+		CP=copy
+		SLASH=\\
+		CMDSEP=&
 	endif
 
-	ifeq ($(UNAME_S),Darwin)
-		LIBS=$(LIBS_OSX)
-		DEFINES += -DOSX
-		C_FILES += $(C_FILES_OSX)
-		CXX_FILES += $(CXX_FILES_OSX)
-		OBJC_FILES += $(OBJC_FILES_OSX)
-		OBJCXX_FILES += $(OBJCXX_FILES_OSX)
-		LIBDIR+=
-		DEPENDENCIES += $(DEP_OSX)
-		# include recipe text to make .app package
-		include $(TOPDIR)/templates/Makefile_include_osx
-	endif
+	else
+		UNAME_S := $(shell uname -s)
+		ifeq ($(UNAME_S),Linux)
+			DEFINES += -DLINUX
+			C_FILES += $(C_FILES_LINUX)
+			CXX_FILES += $(CXX_FILES_LINUX)
+			LIBDIR+=\
+				-L/usr/lib/x86-linux-gnu \
+				-L/usr/lib/x86_64-linux-gnu
+			DEPENDENCIES += $(DEP_LINUX)
+		endif
 
-	UNAME_P := $(shell uname -p)
-	ifeq ($(UNAME_P),x86_64)
-		DEFINES += -DAMD64
-	endif
-	ifneq ($(filter %86,$(UNAME_P)),)
-		DEFINES += -DIA32
-	endif
-	ifneq ($(filter arm%,$(UNAME_P)),)
-		DEFINES += -DARM
-	endif
-endif
+		ifeq ($(UNAME_S),Darwin)
+			LIBS=$(LIBS_OSX)
+			DEFINES += -DOSX
+			C_FILES += $(C_FILES_OSX)
+			CXX_FILES += $(CXX_FILES_OSX)
+			OBJC_FILES += $(OBJC_FILES_OSX)
+			OBJCXX_FILES += $(OBJCXX_FILES_OSX)
+			LIBDIR+=
+			DEPENDENCIES += $(DEP_OSX)
+			# include recipe text to make .app package
+			include $(TOPDIR)/templates/Makefile_include_osx
+		endif
+
+		UNAME_P := $(shell uname -p)
+		ifeq ($(UNAME_P),x86_64)
+			DEFINES += -DAMD64
+		endif
+		ifneq ($(filter %86,$(UNAME_P)),)
+			DEFINES += -DIA32
+		endif
+		ifneq ($(filter arm%,$(UNAME_P)),)
+			DEFINES += -DARM
+		endif
+	endif ### windows
+endif ### web
 
 ifdef DEBUG
 	CXXFLAGS += -g
@@ -124,7 +137,6 @@ debug2: dependencies init $(TARGET) finish
 
 release: CXXFLAGS += -O2
 release: dependencies init $(TARGET) finish
-
 
 $(OBJDIR)/%.o: $(SOURCEDIR)/%.c
 	@echo ""
@@ -169,8 +181,13 @@ init:
 	@echo " Executing post build clean commands..."
 	@$(POSTBUILDCLEAN)
 	
-finish: 
+finish:
 	@echo ""
+ifeq ($(WEB), 1)
+	@echo " Moving binary and JavaScript file to web folder:"
+	$(MV) $(TARGET) $(TARGET).wasm web$(SLASH)
+	@echo ""
+endif
 	@echo " Executing post build commands..."
 	@$(POSTBUILD)
 	@echo ""
@@ -184,6 +201,8 @@ deepclean: $(DEPENDENCIES) clean
 
 clean:
 	$(RM) $(CLEAN_TARGET)
+	$(RM) web$(SLASH)$(CLEAN_TARGET).wasm
+	$(RM) web$(SLASH)$(CLEAN_TARGET)
 	$(RM) $(OBJDIR)
 	$(RM) core.*
 	$(RM) src$(SLASH)moc_*
