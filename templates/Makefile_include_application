@@ -33,7 +33,7 @@ ifdef WEB
 	LIBS=$(LIBS_WEB)
 	LDFLAGS +=$(LIBDIR) -s WASM=1 -s USE_SDL=2 -O3 -s ALLOW_MEMORY_GROWTH --emrun --preload-file assets
 	CC =emcc
-	CXX =emcc
+	CXX =em++
 else
 	ifeq ($(OS),Windows_NT)
 		DEFINES += -DWIN32
@@ -202,6 +202,7 @@ deepclean: $(DEPENDENCIES) clean
 
 clean:
 	$(RM) $(CLEAN_TARGET)
+	$(RM) web$(SLASH)$(CLEAN_TARGET).worker.js
 	$(RM) web$(SLASH)$(CLEAN_TARGET).wasm
 	$(RM) web$(SLASH)$(CLEAN_TARGET).data
 	$(RM) web$(SLASH)$(CLEAN_TARGET)

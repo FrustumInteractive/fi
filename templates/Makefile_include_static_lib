@@ -36,7 +36,7 @@ ifdef WEB
 	LIBS=$(LIBS_WEB)
 	LDFLAGS +=$(LIBDIR) -s WASM=1 -s USE_SDL=2 -O3 -s ALLOW_MEMORY_GROWTH --emrun
 	CC =emcc
-	CXX =emcc
+	CXX =em++
 	AR =emar rcs
 else
 	ifeq ($(OS),Windows_NT)
