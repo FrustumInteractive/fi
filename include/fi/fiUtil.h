@@ -43,24 +43,32 @@ inline std::string commaSeparatedNumber(int number)
 	return s;
 }
 
+} /*NS UTIL*/
+} /*NS FI*/
+
 #ifdef __ANDROID_API__
 
-namespace std {
-	template <typename T>
-	std::string to_string(T value)
-	{
-		std::ostringstream os ;
-		os << value ;
-		return os.str() ;
-	}
+#include <jni.h>
+
+template <typename T>
+std::string to_string(T value)
+{
+	std::ostringstream os ;
+	os << value ;
+	return os.str() ;
 }
 
 FILE* android_fopen(const char* fname, const char* mode);
 #define fopen(name, mode) android_fopen(name, mode)
 
+extern void android_thread_attach(const char *name = nullptr);
+
+extern void android_thread_detach();
+
+extern bool android_egl_context_exists();
+
+
 #endif /*__ANDROID_API__*/
 
-} /*NS UTIL*/
-} /*NS FI*/
 
 #endif /*_FI_UTIL_*/

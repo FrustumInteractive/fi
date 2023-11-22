@@ -328,6 +328,9 @@ extern "C" {
 	void initGL31Funcs();
 	void initGL32Funcs();
 
+	void initGLES20Funcs();
+	void initGLES30Funcs();
+
 #ifdef __cplusplus
 }
 #endif
