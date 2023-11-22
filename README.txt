@@ -3,6 +3,12 @@ Frustum Interactive Development Environment
 
 Windows
 -------
+
+* NOTE*
+ - The Windows build environment is out of date and currently under overhaul (not working currently).
+ - The new way to build will be along the lines of what's outlined here: https://code.visualstudio.com/docs/cpp/config-mingw#_installing-the-mingww64-toolchain
+
+
 To develope under windows, the latest version of Git is required with git bash enabled (preferred).
 The windows command line can be used as well, although there is a risk of less makefile support.
 
