@@ -136,7 +136,7 @@ debug2: DEFINES += -D_DEBUG
 debug2: DEFINES += -D_DEBUG_2
 debug2: init $(TARGET) finish
 
-release: CXXFLAGS += -O2
+release: CXXFLAGS += -O3
 release: init $(TARGET) finish
 
 $(OBJDIR)/%.o: $(SOURCEDIR)/%.c
