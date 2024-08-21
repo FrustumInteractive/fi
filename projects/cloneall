@@ -3,6 +3,7 @@
 git clone git@github.com:FrustumInteractive/fiApp.git
 git clone git@github.com:FrustumInteractive/fiGfx.git
 git clone git@github.com:FrustumInteractive/fiMath.git
+git clone git@github.com:FrustumInteractive/fiAsset.git
 git clone git@github.com:FrustumInteractive/sandbox.git
 git clone git@github.com:FrustumInteractive/veggieJump.git
 

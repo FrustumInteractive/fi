@@ -11,6 +11,7 @@ OBJCXXFLAGS+=$(INCDIR) -std=c++17 -fmodules $(EXTRACXXFLAGS)
 LDFLAGS+=$(LIBDIR)
 INFLAGS?=
 DEFINES?=
+ARCH?=
 
 LIBS=$(LIBS_LINUX)
 
@@ -67,6 +68,8 @@ else
 
 	else
 		UNAME_S := $(shell uname -s)
+		UNAME_P := $(shell uname -m)
+
 		ifeq ($(UNAME_S),Linux)
 			DEFINES += -DLINUX
 			C_FILES += $(C_FILES_LINUX)
@@ -84,13 +87,23 @@ else
 			CXX_FILES += $(CXX_FILES_OSX)
 			OBJC_FILES += $(OBJC_FILES_OSX)
 			OBJCXX_FILES += $(OBJCXX_FILES_OSX)
+			ifeq ($(ARCH),)
+				ifeq ($(UNAME_P), x86_64)
+					CXXFLAGS += -mmacosx-version-min=10.15 -arch x86_64
+				endif
+			else
+				CXXFLAGS += -mmacosx-version-min=10.15 -arch arm64
+				CCFLAGS += -mmacosx-version-min=10.15 -arch arm64
+				OBJCFLAGS += -mmacosx-version-min=10.15 -arch arm64
+				OBJCXXFLAGS += -mmacosx-version-min=10.15 -arch arm64
+				LDFLAGS += -mmacosx-version-min=10.15 -arch arm64
+			endif
 			LIBDIR+=
 			DEPENDENCIES += $(DEP_OSX)
 			# include recipe text to make .app package
 			include $(TOPDIR)/templates/Makefile_include_osx
 		endif
 
-		UNAME_P := $(shell uname -p)
 		ifeq ($(UNAME_P),x86_64)
 			DEFINES += -DAMD64
 		endif
