@@ -30,9 +30,9 @@ ifdef WEB
 	C_FILES +=$(C_FILES_WEB)
 	CXX_FILES +=$(CXX_FILES_WEB)
 	DEPENDENCIES +=$(DEP_WEB)
-	CXXFLAGS =$(INCDIR) -std=c++17 -s USE_SDL=2 -O3 $(EXTRACXXFLAGS)
+	CXXFLAGS =$(INCDIR) -std=c++17 -sUSE_SDL=2 -O3 $(EXTRACXXFLAGS)
 	LIBS=$(LIBS_WEB)
-	LDFLAGS +=$(LIBDIR) -s WASM=1 -sUSE_SDL=2 -O3 -sALLOW_MEMORY_GROWTH --emrun --preload-file assets
+	LDFLAGS +=$(LIBDIR) -sWASM=1 -sUSE_SDL=2 -O3 -sALLOW_MEMORY_GROWTH --emrun --preload-file assets/scene.fas
 	#LDFLAGS +=$(LIBDIR) -s WASM=1 -s USE_SDL=2 -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2 -sFULL_ES3 -sFULL_ES2 -O3 -s ALLOW_MEMORY_GROWTH --emrun --preload-file assets
 	CC =emcc
 	CXX =em++

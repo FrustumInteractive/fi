@@ -18,6 +18,7 @@
 		#if __has_feature(objc_arc)
 			#define ARC
 		#endif
+
 	#else
 		#error "Unknown Apple platform"
 	#endif
