@@ -48,6 +48,8 @@
 	extern PFNGLCULLFACEPROC glCullFace;
 	extern PFNGLFRONTFACEPROC glFrontFace;
 	extern PFNGLBLENDFUNCPROC glBlendFunc;
+	extern PFNGLDEPTHFUNCPROC glDepthFunc;
+	extern PFNGLDEPTHMASKPROC glDepthMask;
 
 	extern PFNGLREADPIXELSPROC glReadPixels;
 	extern PFNGLPIXELSTOREIPROC glPixelStorei;
