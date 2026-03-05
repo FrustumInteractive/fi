@@ -139,43 +139,39 @@ OBJECTS+=$(patsubst %, $(OBJDIR)/%, $(OBJCXX_FILES:.mm=.o))
 ### add include & lib path from dependencies
 INCDIR+=$(patsubst %, -I%/include, $(DEPENDENCIES))
 
-all: init $(TARGET) finish
+all: finish
 
 debug: CXXFLAGS += -g
 debug: DEFINES += -D_DEBUG
-debug: init $(TARGET) finish
+debug: finish
 
 debug2: CXXFLAGS += -g
 debug2: DEFINES += -D_DEBUG
 debug2: DEFINES += -D_DEBUG_2
-debug2: init $(TARGET) finish
+debug2: finish
 
 release: CXXFLAGS += -O3
-release: init $(TARGET) finish
+release: finish
 
-$(OBJDIR)/%.o: $(SOURCEDIR)/%.c
-	@echo ""
-	@echo " Compile:"
-	mkdir -p $(dir $@)
-	$(CC) $(CCFLAGS) $(DEFINES) -c -o $@ $<
+$(OBJDIR)/%.o: $(SOURCEDIR)/%.c | init
+	@echo " Compile: $<"
+	@mkdir -p $(dir $@)
+	@$(CC) $(CCFLAGS) $(DEFINES) -c -o $@ $<
 
-$(OBJDIR)/%.o: $(SOURCEDIR)/%.cpp
-	@echo ""
-	@echo " Compile:"
-	mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) $(DEFINES) -c -o $@ $<
+$(OBJDIR)/%.o: $(SOURCEDIR)/%.cpp | init
+	@echo " Compile: $<"
+	@mkdir -p $(dir $@)
+	@$(CXX) $(CXXFLAGS) $(DEFINES) -c -o $@ $<
 
-$(OBJDIR)/%.o: $(SOURCEDIR)/%.m
-	@echo ""
-	@echo " Compile:"
-	mkdir -p $(dir $@)
-	$(CXX) $(OBJCFLAGS) $(DEFINES) -c -o $@ $<
+$(OBJDIR)/%.o: $(SOURCEDIR)/%.m | init
+	@echo " Compile: $<"
+	@mkdir -p $(dir $@)
+	@$(CXX) $(OBJCFLAGS) $(DEFINES) -c -o $@ $<
 
-$(OBJDIR)/%.o: $(SOURCEDIR)/%.mm
-	@echo ""
-	@echo " Compile:"
-	mkdir -p $(dir $@)
-	$(CXX) $(OBJCXXFLAGS) $(DEFINES) -c -o $@ $<
+$(OBJDIR)/%.o: $(SOURCEDIR)/%.mm | init
+	@echo " Compile: $<"
+	@mkdir -p $(dir $@)
+	@$(CXX) $(OBJCXXFLAGS) $(DEFINES) -c -o $@ $<
 
 $(TARGET): $(OBJECTS)
 	@echo ""
@@ -198,16 +194,18 @@ init:
 	@echo "*************************************"
 	@echo "	Building: $(TARGET)"
 	@echo "*************************************"
-	@echo ""
-	@echo " Executing post build clean commands..."
+	@echo " Compiler: $(CXX)"
+	@echo " CXXFLAGS: $(CXXFLAGS)"
+	@echo " DEFINES:  $(DEFINES)"
+	@echo " Executing pre-build clean commands..."
 	@$(POSTBUILDCLEAN)
 
-finish:
+finish: init $(TARGET)
 	@echo ""
 	@echo " Copying library:"
-	mkdir -p $(TOPDIR)$(SLASH)lib
+	@mkdir -p $(TOPDIR)$(SLASH)lib
 	$(CP) $(OUTDIR)$(SLASH)$(TARGET) $(TOPDIR)$(SLASH)lib$(SLASH)
-	mkdir -p lib
+	@mkdir -p lib
 	$(CP) $(OUTDIR)$(SLASH)$(TARGET) lib/
 	@echo ""
 	$(POSTBUILD)
@@ -226,4 +224,3 @@ clean:
 	$(RM) $(TOPDIR)$(SLASH)lib$(SLASH)$(TARGET)
 	$(POSTBUILDCLEAN)
 	$(MAKE) -C test clean
-

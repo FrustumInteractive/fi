@@ -16,6 +16,9 @@ ARCH?=
 LIBS=$(LIBS_LINUX)
 
 RESOURCES?=
+BUILD_LOG_DIR?=.buildlogs
+BUILD_LOG_FILE?=build.log
+TARGET_BUILD_LOG:=$(BUILD_LOG_DIR)/$(TARGET).log
 
 ### Tool / OS specific substitutions
 RM=rm -rf
@@ -138,82 +141,177 @@ OBJECTS+=$(patsubst %, $(OBJDIR)/%, $(OBJCXX_FILES:.mm=.o))
 INCDIR+=$(patsubst %, -I%/include, $(DEPENDENCIES))
 LIBDIR+=$(patsubst %, -L%/lib, $(DEPENDENCIES))
 
-all: dependencies init $(TARGET) finish
+all: finish
 
 debug: CXXFLAGS += -g
 debug: DEFINES += -D_DEBUG
-debug: dependencies init $(TARGET) finish
+debug: finish
 
 debug2: CXXFLAGS += -g
 debug2: DEFINES += -D_DEBUG
 debug2: DEFINES += -D_DEBUG_2
-debug2: dependencies init $(TARGET) finish
+debug2: finish
 
 release: CXXFLAGS += -O3
-release: dependencies init $(TARGET) finish
+release: finish
 
-$(OBJDIR)/%.o: $(SOURCEDIR)/%.c
-	@echo ""
-	@echo " Compile:"
-	mkdir -p $(dir $@)
-	$(CC) $(CXXFLAGS) $(DEFINES) -c -o $@ $<
+$(OBJDIR)/%.o: $(SOURCEDIR)/%.c | init
+	@echo " Compile: $<"
+	@mkdir -p $(dir $@)
+	@echo " Compile: $<" >> $(TARGET_BUILD_LOG)
+	@tmp_log=$$(mktemp -t fi_target_XXXXXX.log); \
+	if $(CC) $(CXXFLAGS) $(DEFINES) -c -o $@ $< > $$tmp_log 2>&1; then \
+		cat $$tmp_log; \
+		cat $$tmp_log >> $(TARGET_BUILD_LOG); \
+		rm -f $$tmp_log; \
+	else \
+		cat $$tmp_log; \
+		cat $$tmp_log >> $(TARGET_BUILD_LOG); \
+		rm -f $$tmp_log; \
+		exit 1; \
+	fi
 
-$(OBJDIR)/%.o: $(SOURCEDIR)/%.cpp
-	@echo ""
-	@echo " Compile:"
-	mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) $(DEFINES) -c -o $@ $<
+$(OBJDIR)/%.o: $(SOURCEDIR)/%.cpp | init
+	@echo " Compile: $<"
+	@mkdir -p $(dir $@)
+	@echo " Compile: $<" >> $(TARGET_BUILD_LOG)
+	@tmp_log=$$(mktemp -t fi_target_XXXXXX.log); \
+	if $(CXX) $(CXXFLAGS) $(DEFINES) -c -o $@ $< > $$tmp_log 2>&1; then \
+		cat $$tmp_log; \
+		cat $$tmp_log >> $(TARGET_BUILD_LOG); \
+		rm -f $$tmp_log; \
+	else \
+		cat $$tmp_log; \
+		cat $$tmp_log >> $(TARGET_BUILD_LOG); \
+		rm -f $$tmp_log; \
+		exit 1; \
+	fi
 
-$(OBJDIR)/%.o: $(SOURCEDIR)/%.m
-	@echo ""
-	@echo " Compile:"
-	mkdir -p $(dir $@)
-	$(CXX) $(OBJCFLAGS) $(DEFINES) -c -o $@ $<
+$(OBJDIR)/%.o: $(SOURCEDIR)/%.m | init
+	@echo " Compile: $<"
+	@mkdir -p $(dir $@)
+	@echo " Compile: $<" >> $(TARGET_BUILD_LOG)
+	@tmp_log=$$(mktemp -t fi_target_XXXXXX.log); \
+	if $(CXX) $(OBJCFLAGS) $(DEFINES) -c -o $@ $< > $$tmp_log 2>&1; then \
+		cat $$tmp_log; \
+		cat $$tmp_log >> $(TARGET_BUILD_LOG); \
+		rm -f $$tmp_log; \
+	else \
+		cat $$tmp_log; \
+		cat $$tmp_log >> $(TARGET_BUILD_LOG); \
+		rm -f $$tmp_log; \
+		exit 1; \
+	fi
 
-$(OBJDIR)/%.o: $(SOURCEDIR)/%.mm
-	@echo ""
-	@echo " Compile:"
-	mkdir -p $(dir $@)
-	$(CXX) $(OBJCXXFLAGS) $(DEFINES) -c -o $@ $<
+$(OBJDIR)/%.o: $(SOURCEDIR)/%.mm | init
+	@echo " Compile: $<"
+	@mkdir -p $(dir $@)
+	@echo " Compile: $<" >> $(TARGET_BUILD_LOG)
+	@tmp_log=$$(mktemp -t fi_target_XXXXXX.log); \
+	if $(CXX) $(OBJCXXFLAGS) $(DEFINES) -c -o $@ $< > $$tmp_log 2>&1; then \
+		cat $$tmp_log; \
+		cat $$tmp_log >> $(TARGET_BUILD_LOG); \
+		rm -f $$tmp_log; \
+	else \
+		cat $$tmp_log; \
+		cat $$tmp_log >> $(TARGET_BUILD_LOG); \
+		rm -f $$tmp_log; \
+		exit 1; \
+	fi
 
-$(TARGET): $(OBJECTS)
+$(TARGET): $(OBJECTS) | dependencies init
 	@echo ""
 	@echo " Link:"
-	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
+	@echo "" >> $(TARGET_BUILD_LOG)
+	@echo " Link: $@" >> $(TARGET_BUILD_LOG)
+	@echo " Command: $(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)" >> $(TARGET_BUILD_LOG)
+	@tmp_log=$$(mktemp -t fi_target_XXXXXX.log); \
+	if $(CXX) $(LDFLAGS) -o $@ $^ $(LIBS) > $$tmp_log 2>&1; then \
+		cat $$tmp_log; \
+		cat $$tmp_log >> $(TARGET_BUILD_LOG); \
+		rm -f $$tmp_log; \
+	else \
+		cat $$tmp_log; \
+		cat $$tmp_log >> $(TARGET_BUILD_LOG); \
+		rm -f $$tmp_log; \
+		exit 1; \
+	fi
 
 dependencies: $(DEPENDENCIES)
 	@echo ""
 	@echo " Building prerequesite project: $^"
-	$(foreach x, $^, $(MAKE) -C $(x) $(MAKECMDGOALS)$(CMDSEP))
+	@mkdir -p $(BUILD_LOG_DIR)
+	@set -e; \
+	for x in $^; do \
+		project_name=$$(basename $$x); \
+		project_log="$(BUILD_LOG_DIR)/$$project_name.log"; \
+		echo ""; \
+		echo " ----- [$$project_name] begin -----"; \
+		if $(MAKE) -C $$x $(MAKECMDGOALS) > $$project_log 2>&1; then \
+			cat $$project_log; \
+			echo " ----- [$$project_name] end -----"; \
+		else \
+			cat $$project_log; \
+			exit 1; \
+		fi; \
+	done
 
 init:
 	@echo ""
 	@echo "*************************************"
 	@echo "	Building: $(TARGET)"
 	@echo "*************************************"
-	@echo ""
-	@echo " Executing post build clean commands..."
+	@echo " Compiler: $(CXX)"
+	@echo " CXXFLAGS: $(CXXFLAGS)"
+	@echo " DEFINES:  $(DEFINES)"
+	@echo " Executing pre-build clean commands..."
 	@$(POSTBUILDCLEAN)
+	@mkdir -p $(BUILD_LOG_DIR)
+	@rm -f $(TARGET_BUILD_LOG)
+	@echo "*************************************" >> $(TARGET_BUILD_LOG)
+	@echo " Building: $(TARGET)" >> $(TARGET_BUILD_LOG)
+	@echo "*************************************" >> $(TARGET_BUILD_LOG)
+	@echo " Compiler: $(CXX)" >> $(TARGET_BUILD_LOG)
+	@echo " CXXFLAGS: $(CXXFLAGS)" >> $(TARGET_BUILD_LOG)
+	@echo " DEFINES:  $(DEFINES)" >> $(TARGET_BUILD_LOG)
 	
-finish:
+finish: $(TARGET)
 	@echo ""
 ifeq ($(WEB), 1)
 	@echo " Moving binary and JavaScript file to web folder:"
-	mkdir -p web
+	@mkdir -p web
 	$(MV) $(TARGET) $(TARGET).wasm web$(SLASH)
 	@if [ -f $(TARGET).data ]; then $(MV) $(TARGET).data web$(SLASH); fi
 	@echo ""
 endif
 	@echo " Executing post build commands..."
 	@$(POSTBUILD)
+	@echo " Writing ordered build log: $(BUILD_LOG_FILE)"
+	@set -e; \
+	rm -f $(BUILD_LOG_FILE); \
+	for x in $(DEPENDENCIES); do \
+		project_name=$$(basename $$x); \
+		project_log="$(BUILD_LOG_DIR)/$$project_name.log"; \
+		if [ -f $$project_log ]; then \
+			cat $$project_log >> $(BUILD_LOG_FILE); \
+			echo "" >> $(BUILD_LOG_FILE); \
+		fi; \
+	done; \
+	if [ -f $(TARGET_BUILD_LOG) ]; then \
+		cat $(TARGET_BUILD_LOG) >> $(BUILD_LOG_FILE); \
+		echo "" >> $(BUILD_LOG_FILE); \
+	fi
 	@echo ""
 	@echo "*Build completed.*"
 	@echo ""
 
 .PHONY: clean
 
-deepclean: $(DEPENDENCIES) clean
-	$(foreach x, $(DEPENDENCIES), $(MAKE) -C $(x) clean$(CMDSEP)) 
+deepclean: clean
+	@set -e; \
+	for x in $(DEPENDENCIES); do \
+		$(MAKE) -C $$x clean; \
+	done
 
 clean:
 	$(RM) $(CLEAN_TARGET)
