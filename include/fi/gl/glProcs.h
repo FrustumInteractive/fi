@@ -32,6 +32,7 @@
 	extern PFNGLCLEARCOLORPROC glClearColor;
 	extern PFNGLDRAWARRAYSPROC glDrawArrays;
 	extern PFNGLDRAWELEMENTSPROC glDrawElements;
+	extern PFNGLDRAWBUFFERPROC glDrawBuffer;
 	extern PFNGLVIEWPORTPROC glViewport;
 	extern PFNGLSCISSORPROC glScissor;
 	extern PFNGLGETERRORPROC glGetError;
@@ -52,6 +53,7 @@
 	extern PFNGLDEPTHMASKPROC glDepthMask;
 
 	extern PFNGLREADPIXELSPROC glReadPixels;
+	extern PFNGLREADBUFFERPROC glReadBuffer;
 	extern PFNGLPIXELSTOREIPROC glPixelStorei;
 	extern PFNGLPIXELSTOREFPROC glPixelStoref;
 
