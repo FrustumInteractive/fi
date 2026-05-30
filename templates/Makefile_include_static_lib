@@ -117,11 +117,6 @@ else
 	endif ### windows
 endif ### web
 
-ifdef DEBUG
-	CXXFLAGS += -g
-	DEFINES += -D_DEBUG
-endif
-
 ifdef debug
 	CXXFLAGS += -g
 	DEFINES += -D_DEBUG

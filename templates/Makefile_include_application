@@ -12,6 +12,7 @@ LDFLAGS+=$(LIBDIR)
 INFLAGS?=
 DEFINES?=
 ARCH?=
+RELEASE_CXXFLAGS?=-O3
 
 LIBS=$(LIBS_LINUX)
 
@@ -119,11 +120,6 @@ else
 	endif ### windows
 endif ### web
 
-ifdef DEBUG
-	CXXFLAGS += -g
-	DEFINES += -D_DEBUG
-endif
-
 ifdef debug
 	CXXFLAGS += -g
 	DEFINES += -D_DEBUG
@@ -152,10 +148,12 @@ debug2: DEFINES += -D_DEBUG
 debug2: DEFINES += -D_DEBUG_2
 debug2: finish
 
-release: CXXFLAGS += -O3
+release: CXXFLAGS += $(RELEASE_CXXFLAGS)
+release: OBJCFLAGS += $(RELEASE_CXXFLAGS)
+release: OBJCXXFLAGS += $(RELEASE_CXXFLAGS)
 release: finish
 
-$(OBJDIR)/%.o: $(SOURCEDIR)/%.c | init
+$(OBJDIR)/%.o: $(SOURCEDIR)/%.c | dependencies init
 	@echo " Compile: $<"
 	@mkdir -p $(dir $@)
 	@echo " Compile: $<" >> $(TARGET_BUILD_LOG)
@@ -171,7 +169,7 @@ $(OBJDIR)/%.o: $(SOURCEDIR)/%.c | init
 		exit 1; \
 	fi
 
-$(OBJDIR)/%.o: $(SOURCEDIR)/%.cpp | init
+$(OBJDIR)/%.o: $(SOURCEDIR)/%.cpp | dependencies init
 	@echo " Compile: $<"
 	@mkdir -p $(dir $@)
 	@echo " Compile: $<" >> $(TARGET_BUILD_LOG)
@@ -187,7 +185,7 @@ $(OBJDIR)/%.o: $(SOURCEDIR)/%.cpp | init
 		exit 1; \
 	fi
 
-$(OBJDIR)/%.o: $(SOURCEDIR)/%.m | init
+$(OBJDIR)/%.o: $(SOURCEDIR)/%.m | dependencies init
 	@echo " Compile: $<"
 	@mkdir -p $(dir $@)
 	@echo " Compile: $<" >> $(TARGET_BUILD_LOG)
@@ -203,7 +201,7 @@ $(OBJDIR)/%.o: $(SOURCEDIR)/%.m | init
 		exit 1; \
 	fi
 
-$(OBJDIR)/%.o: $(SOURCEDIR)/%.mm | init
+$(OBJDIR)/%.o: $(SOURCEDIR)/%.mm | dependencies init
 	@echo " Compile: $<"
 	@mkdir -p $(dir $@)
 	@echo " Compile: $<" >> $(TARGET_BUILD_LOG)
@@ -245,15 +243,16 @@ dependencies: $(DEPENDENCIES)
 	for x in $^; do \
 		project_name=$$(basename $$x); \
 		project_log="$(BUILD_LOG_DIR)/$$project_name.log"; \
+		status_file="$${TMPDIR:-/tmp}/fi_make_status_$$$$"; \
 		echo ""; \
 		echo " ----- [$$project_name] begin -----"; \
-		if $(MAKE) -C $$x $(MAKECMDGOALS) > $$project_log 2>&1; then \
-			cat $$project_log; \
-			echo " ----- [$$project_name] end -----"; \
-		else \
-			cat $$project_log; \
-			exit 1; \
+		( $(MAKE) -C $$x $(MAKECMDGOALS) 2>&1; echo $$? > $$status_file ) | tee $$project_log; \
+		status=$$(cat $$status_file); \
+		rm -f $$status_file; \
+		if [ $$status -ne 0 ]; then \
+			exit $$status; \
 		fi; \
+		echo " ----- [$$project_name] end -----"; \
 	done
 
 init:
