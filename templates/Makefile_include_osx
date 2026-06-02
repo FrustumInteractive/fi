@@ -36,14 +36,13 @@ INFOPLIST = \
 	"\\n\</dict\>" \
 	"\\n\</plist\>"
 
-POSTBUILD:=\
-	mkdir $(TARGET).app && \
-	mkdir $(TARGET).app/Contents && \
-	mkdir $(TARGET).app/Contents/MacOS && \
-	mkdir $(TARGET).app/Contents/Resources && \
-	echo "$(INFOPLIST)" >$(TARGET).app/Contents/Info.plist && \
-	$(foreach x, $(RESOURCES), cp -r $(x) $(TARGET).app/Contents/MacOS/;) \
-	cp $(TARGET) $(TARGET).app/Contents/MacOS/
+	CLEAN_EXTRA += $(TARGET).app
 
-POSTBUILDCLEAN:= \
-	rm -rf $(TARGET).app/
+	POSTBUILD:=\
+		mkdir -p $(TARGET).app/Contents/MacOS && \
+		mkdir -p $(TARGET).app/Contents/Resources && \
+		echo "$(INFOPLIST)" >$(TARGET).app/Contents/Info.plist && \
+		$(foreach x, $(RESOURCES), rsync -a --delete $(x) $(TARGET).app/Contents/MacOS/;) \
+		cp $(TARGET) $(TARGET).app/Contents/MacOS/
+
+	POSTBUILDCLEAN:=

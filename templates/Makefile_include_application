@@ -17,6 +17,7 @@ RELEASE_CXXFLAGS?=-O3
 LIBS=$(LIBS_LINUX)
 
 RESOURCES?=
+CLEAN_EXTRA?=
 BUILD_LOG_DIR?=.buildlogs
 BUILD_LOG_FILE?=build.log
 TARGET_BUILD_LOG:=$(BUILD_LOG_DIR)/$(TARGET).log
@@ -313,7 +314,7 @@ deepclean: clean
 	done
 
 clean:
-	$(RM) $(CLEAN_TARGET)
+	$(RM) $(CLEAN_TARGET) $(CLEAN_EXTRA)
 	$(RM) web$(SLASH)$(CLEAN_TARGET).worker.js
 	$(RM) web$(SLASH)$(CLEAN_TARGET).wasm
 	$(RM) web$(SLASH)$(CLEAN_TARGET).data
