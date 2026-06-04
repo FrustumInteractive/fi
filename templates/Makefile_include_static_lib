@@ -20,6 +20,13 @@ ARCH?=
 
 LIBS=$(LIBS_LINUX)
 
+ifneq (,$(filter web gles3,$(MAKECMDGOALS)))
+WEB=1
+endif
+ifneq (,$(filter gles3,$(MAKECMDGOALS)))
+GLES3=1
+endif
+
 ### Tool / OS specific substitutions
 RM=rm -rf
 CP=cp -f
@@ -29,17 +36,27 @@ AR=ar rcs
 
 ### Operating system specific defines, etc.
 ifdef WEB
-	DEFINES +=-DWEB -D_GLES2 $(CXXFLAGS_WEB)
+	ifdef GLES3
+		WEB_BUILD_VARIANT=web_gles3
+		DEFINES +=-DWEB -D_GLES3 $(CXXFLAGS_WEB)
+	else
+		WEB_BUILD_VARIANT=web_gles2
+		DEFINES +=-DWEB -D_GLES2 $(CXXFLAGS_WEB)
+	endif
 	C_FILES +=$(C_FILES_WEB)
 	CXX_FILES +=$(CXX_FILES_WEB)
 	DEPENDENCIES +=$(DEP_WEB)
 	CXXFLAGS =$(INCDIR) -std=c++17 -sUSE_SDL=2 -O3 $(EXTRACXXFLAGS)
 	LIBS=$(LIBS_WEB)
-	LDFLAGS +=$(LIBDIR) -sWASM=1 -sUSE_SDL=2 -O3 -sALLOW_MEMORY_GROWTH --emrun
-	#LDFLAGS +=$(LIBDIR) -s WASM=1 -sWASMFS -s USE_SDL=2 -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2 -sFULL_ES3 -sFULL_ES2 -O3 -s ALLOW_MEMORY_GROWTH --emrun
+	ifdef GLES3
+		LDFLAGS +=$(LIBDIR) -sWASM=1 -sUSE_SDL=2 -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2 -sFULL_ES3=1 -O3 -sALLOW_MEMORY_GROWTH --emrun
+	else
+		LDFLAGS +=$(LIBDIR) -sWASM=1 -sUSE_SDL=2 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=1 -O3 -sALLOW_MEMORY_GROWTH --emrun
+	endif
 	CC =emcc
 	CXX =em++
 	AR =emar rcs
+	OUTDIR=build/$(WEB_BUILD_VARIANT)
 else
 	ifeq ($(OS),Windows_NT)
 		DEFINES += -DWIN32 $(CXXFLAGS_WIN)
@@ -124,7 +141,7 @@ endif
 
 
 ### Set path for output object files
-OUTDIR=build
+OUTDIR?=build
 OBJDIR=$(OUTDIR)/obj
 OBJECTS=$(patsubst %, $(OBJDIR)/%, $(C_FILES:.c=.o))
 OBJECTS+=$(patsubst %, $(OBJDIR)/%, $(CXX_FILES:.cpp=.o))
@@ -135,6 +152,10 @@ OBJECTS+=$(patsubst %, $(OBJDIR)/%, $(OBJCXX_FILES:.mm=.o))
 INCDIR+=$(patsubst %, -I%/include, $(DEPENDENCIES))
 
 all: finish
+
+.PHONY: web gles3
+web gles3: finish
+	@:
 
 debug: CXXFLAGS += -g
 debug: DEFINES += -D_DEBUG
