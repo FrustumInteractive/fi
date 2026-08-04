@@ -5,7 +5,9 @@
 #include <sstream>
 #include <vector>
 #include <functional>
-#include <dirent.h>
+#include <filesystem>
+#include <unordered_map>
+#include <cctype>
 
 #include "debug/trace.h"
 
@@ -86,24 +88,27 @@ inline void processCmdLineArgs(
 
 inline void listFiles(const std::string &path, std::function<void(const std::string &)> cb) // recursively list all files in path
 {
-	if (const auto dir = opendir(path.c_str()))
+	std::error_code ec;
+	const std::filesystem::recursive_directory_iterator end;
+	for (std::filesystem::recursive_directory_iterator it(
+			path, std::filesystem::directory_options::skip_permission_denied, ec);
+		 it != end; it.increment(ec))
 	{
-		while (const auto f = readdir(dir))
+		if (ec)
 		{
-			if (f->d_name[0] == '.')
-			{
-				continue;
-			}
-			if (f->d_type == DT_DIR)
-			{
-				listFiles(path + "/" + f->d_name, cb);
-			}
-			else if (f->d_type == DT_REG)
-			{
-				cb(path + "/" + f->d_name);
-			}
+			ec.clear();
+			continue;
 		}
-		closedir(dir);
+		const std::string filename = it->path().filename().string();
+		if (!filename.empty() && filename.front() == '.')
+		{
+			if (it->is_directory(ec)) it.disable_recursion_pending();
+			continue;
+		}
+		if (it->is_regular_file(ec))
+		{
+			cb(it->path().generic_string());
+		}
 	}
 }
 

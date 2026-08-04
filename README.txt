@@ -4,19 +4,58 @@ Frustum Interactive Development Environment
 Windows
 -------
 
-* NOTE*
- - The Windows build environment is out of date and currently under overhaul (not working currently).
- - The new way to build will be along the lines of what's outlined here: https://code.visualstudio.com/docs/cpp/config-mingw#_installing-the-mingww64-toolchain
+The supported native Windows setup uses Git Bash as the shell, GNU Make as the
+build driver, and Visual Studio LLVM plus the Windows SDK as the C/C++ toolchain.
 
+Prerequisites:
+ - Windows 10 or 11
+ - Git for Windows, including Git Bash
+ - Visual Studio 2022 or Build Tools 2022 with these components:
+   - Desktop development with C++ / MSVC x64 tools
+   - C++ Clang tools for Windows
+   - A Windows 10 or Windows 11 SDK
+ - GNU Make 4.x
 
-To develope under windows, the latest version of Git is required with git bash enabled (preferred).
-The windows command line can be used as well, although there is a risk of less makefile support.
+Install GNU Make from a normal Command Prompt or PowerShell window:
 
-There are external packages required for building such as GCC/CLang.
-The MinGW/GCC package for windows is minGW.tar.gz which should be extracted in the extern/minGW folder.
-This is where the startdev.sh script points to in order to build.
-When git bash is installed, running startdev.sh sets the environment for the required build tools.
-If windows cmd line is used instead then startdev.bat should be called first to set environment.
+  winget install --id ezwinports.make --exact
+
+Close any old terminal after installing it. From the fi repository root, run:
+
+  startdev-windows.bat
+
+This locates Visual Studio, initializes its x64 compiler and SDK environment,
+selects TOOLCHAIN=llvm-msvc, and opens Git Bash. Verify the environment with:
+
+  make --version
+  clang++ --version
+
+Projects can then be built in the usual way, for example:
+
+  cd projects/fiApp/test
+  make deepclean
+  make
+
+The shared templates also retain the old MinGW route. In an environment that
+already provides MinGW-w64 GCC, select it with TOOLCHAIN=mingw.
+
+Windows API compatibility is controlled centrally by WINDOWS_MIN_VERSION. The
+default is 0x0601 (the Windows 7 API surface). A project can raise it when using
+newer APIs, for example:
+
+  make WINDOWS_MIN_VERSION=0x0A00
+
+This controls declarations exposed by the Windows SDK; it does not by itself
+guarantee that the selected compiler runtime supports an obsolete Windows release.
+
+For Vulkan applications, also install the LunarG Vulkan SDK and open a fresh
+development shell so VULKAN_SDK is available. Select the backend with:
+
+  make EXTRACXXFLAGS=-DFI_GFX_VULKAN
+
+The shared application and static-library templates propagate the SDK's Windows
+Include directory to dependency builds. Applications must link Vulkan with
+-L$(VULKAN_SDK)/Lib -lvulkan-1; the fiGfx scene test does this automatically.
 
 
 Mac OS

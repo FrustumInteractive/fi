@@ -1,0 +1,57 @@
+# Shared compiler/tool selection for the GNU Make templates.
+#
+# TOOLCHAIN values on Windows:
+#   mingw      Existing MinGW-w64 GCC toolchain (default for compatibility)
+#   llvm-msvc  Visual Studio LLVM using the MSVC ABI and Windows SDK
+#
+# llvm-msvc must be run from an environment initialized by VsDevCmd.bat or
+# vcvarsall.bat so clang can find the MSVC and Windows SDK headers/libraries.
+
+TOOLCHAIN ?=
+
+ifeq ($(OS),Windows_NT)
+ifeq ($(WEB),)
+	TOOLCHAIN := $(if $(TOOLCHAIN),$(TOOLCHAIN),mingw)
+
+	ifeq ($(TOOLCHAIN),mingw)
+		CC := gcc
+		CXX := g++
+		AR := ar
+	endif
+
+	ifeq ($(TOOLCHAIN),llvm-msvc)
+		CC := clang
+		CXX := clang++
+		AR := llvm-ar
+	endif
+
+	ifneq ($(filter $(TOOLCHAIN),mingw llvm-msvc),$(TOOLCHAIN))
+$(error Unsupported Windows TOOLCHAIN '$(TOOLCHAIN)'; use mingw or llvm-msvc)
+	endif
+
+	# Windows 7 is the oldest API surface used by default. Projects can select a
+	# newer baseline, for example WINDOWS_MIN_VERSION=0x0A00 for Windows 10.
+	WINDOWS_MIN_VERSION ?= 0x0601
+	WINDOWS_VERSION_DEFINES := \
+		-D_WIN32_WINNT=$(WINDOWS_MIN_VERSION) \
+		-DWINVER=$(WINDOWS_MIN_VERSION) \
+		-DNOMINMAX
+endif
+else
+	# Preserve GNU Make command-line/environment overrides while replacing its
+	# built-in defaults with the tool names historically used by these templates.
+	ifeq ($(origin CC),default)
+		CC := gcc
+	endif
+	ifeq ($(origin CXX),default)
+		CXX := g++
+	endif
+	ifeq ($(origin AR),default)
+		AR := ar
+	endif
+endif
+
+ifeq ($(origin ARFLAGS),default)
+	ARFLAGS := rcs
+endif
+ARFLAGS ?= rcs

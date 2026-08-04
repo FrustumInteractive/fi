@@ -3,7 +3,15 @@
 
 #include "fi/gl/glcorearb.h"
 
-#ifdef LINUX
+#if defined(WIN32)
+	#ifdef __cplusplus
+	extern "C" {
+	#endif
+		void* getProcAddress(const char *proc);
+	#ifdef __cplusplus
+	}
+	#endif
+#elif defined(LINUX)
 	#include <GL/glx.h>
 	#define getProcAddress(x) glXGetProcAddress((const GLubyte*)x)
 #elif defined(OSX) || defined(__ANDROID__)
@@ -22,6 +30,14 @@
 	#endif
 
 	// GL 1.X
+
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#if defined(WIN32) || defined(OSX) || defined(__ANDROID__)
 	extern PFNGLGETSTRINGPROC glGetString;
 	extern PFNGLGETINTEGERVPROC glGetIntegerv;
 	extern PFNGLFLUSHPROC glFlush;
@@ -56,7 +72,6 @@
 	extern PFNGLREADBUFFERPROC glReadBuffer;
 	extern PFNGLPIXELSTOREIPROC glPixelStorei;
 	extern PFNGLPIXELSTOREFPROC glPixelStoref;
-
 #endif
 
 #ifdef __cplusplus
@@ -334,6 +349,11 @@ extern "C" {
 
 	void initGLES20Funcs();
 	void initGLES30Funcs();
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #ifdef __cplusplus
 }

@@ -38,13 +38,13 @@ inline void _MSG(const Head& head, const Args&... args )
 	_MSG(args...);
 }
 
-inline void _THROW( const std::string fn, const std::string desc )
+inline void throwIntentionalExit( const std::string fn, const std::string desc )
 {
 	std::string s = fn + ": " + desc;
 	throw IntentionalExit(s);
 }
 
-#define THROW(x)    _THROW(__PRETTY_FUNCTION__,x)
+#define THROW(x)    throwIntentionalExit(__PRETTY_FUNCTION__,x)
 
 // exmple without using macro - but need to get calling fn name somehow...
 //template<typename... Args> inline void DEBUG(Args&&... args)	{ _MSG(__PRETTY_FUNCTION__, ": ", std::forward<Args>(args)...); }

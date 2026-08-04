@@ -3,8 +3,20 @@ TOPDIR?=../..
 INCDIR+=-I./include -I/usr/include -I./external -I$(TOPDIR)/include -I$(TOPDIR)/projects -I$(TOPDIR)/external
 LIBDIR+=-L/usr/lib
 
-CC=gcc
-CXX=g++
+# LunarG's Windows SDK uses capitalized Include/Lib directories.  Keep this in
+# the shared template so Vulkan applications and all dependency builds see the
+# same headers when FI_GFX_VULKAN is selected.
+ifneq (,$(findstring FI_GFX_VULKAN,$(EXTRACXXFLAGS)))
+ifneq ($(strip $(VULKAN_SDK)),)
+VULKAN_SDK_PATH := $(subst \,/,$(VULKAN_SDK))
+ifeq ($(OS),Windows_NT)
+INCDIR += -I$(VULKAN_SDK_PATH)/Include
+else
+INCDIR += -I$(VULKAN_SDK_PATH)/include
+endif
+endif
+endif
+
 CXXFLAGS+=$(INCDIR) -Wall -std=c++17 $(EXTRACXXFLAGS)
 OBJCFLAGS+=$(INCDIR) -fmodules
 OBJCXXFLAGS+=$(INCDIR) -std=c++17 -fmodules $(EXTRACXXFLAGS)
@@ -21,6 +33,7 @@ CLEAN_EXTRA?=
 BUILD_LOG_DIR?=.buildlogs
 BUILD_LOG_FILE?=build.log
 TARGET_BUILD_LOG:=$(BUILD_LOG_DIR)/$(TARGET).log
+DEPENDENCY_MAKE_GOALS?=$(MAKECMDGOALS)
 
 ifneq (,$(filter web gles3,$(MAKECMDGOALS)))
 WEB=1
@@ -28,6 +41,8 @@ endif
 ifneq (,$(filter gles3,$(MAKECMDGOALS)))
 GLES3=1
 endif
+
+include $(TOPDIR)/templates/Makefile_include_toolchain
 
 ### Tool / OS specific substitutions
 RM=rm -rf
@@ -60,16 +75,24 @@ ifdef WEB
 	OBJDIR=obj/$(WEB_BUILD_VARIANT)
 else
 	ifeq ($(OS),Windows_NT)
-		DEFINES += -DWIN32
+		DEFINES += -DWIN32 $(WINDOWS_VERSION_DEFINES) $(CXXFLAGS_WIN)
+		ifeq ($(VSCMD_ARG_TGT_ARCH),x64)
+			DEFINES += -DAMD64
+		else ifeq ($(VSCMD_ARG_TGT_ARCH),x86)
+			DEFINES += -DIA32
+		else
 		ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
 			DEFINES += -DAMD64
 		endif
 		ifeq ($(PROCESSOR_ARCHITECTURE),x86)
 			DEFINES += -DIA32
 		endif
+		endif
 
 		LIBS=$(LIBS_W32)
-		CLEAN_TARGET=$(TARGET).exe
+		TARGET := $(if $(filter %.exe,$(TARGET)),$(TARGET),$(TARGET).exe)
+		CLEAN_TARGET=$(TARGET)
+		CLEAN_EXTRA += $(basename $(TARGET))
 		C_FILES += $(C_FILES_WIN)
 		CXX_FILES += $(CXX_FILES_WIN)
 		INCDIR +=\
@@ -239,14 +262,14 @@ $(OBJDIR)/%.o: $(SOURCEDIR)/%.mm | dependencies init
 		exit 1; \
 	fi
 
-$(TARGET): $(OBJECTS) | dependencies init
+$(TARGET): $(OBJECTS) dependencies | init
 	@echo ""
 	@echo " Link:"
 	@echo "" >> $(TARGET_BUILD_LOG)
 	@echo " Link: $@" >> $(TARGET_BUILD_LOG)
-	@echo " Command: $(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)" >> $(TARGET_BUILD_LOG)
+	@echo " Command: $(CXX) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBS)" >> $(TARGET_BUILD_LOG)
 	@tmp_log=$$(mktemp -t fi_target_XXXXXX.log); \
-	if $(CXX) $(LDFLAGS) -o $@ $^ $(LIBS) > $$tmp_log 2>&1; then \
+	if $(CXX) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBS) > $$tmp_log 2>&1; then \
 		cat $$tmp_log; \
 		cat $$tmp_log >> $(TARGET_BUILD_LOG); \
 		rm -f $$tmp_log; \
@@ -268,7 +291,7 @@ dependencies: $(DEPENDENCIES)
 		status_file="$${TMPDIR:-/tmp}/fi_make_status_$$$$"; \
 		echo ""; \
 		echo " ----- [$$project_name] begin -----"; \
-		( $(MAKE) -C $$x $(MAKECMDGOALS) 2>&1; echo $$? > $$status_file ) | tee $$project_log; \
+		( "$(MAKE)" -C $$x $(DEPENDENCY_MAKE_GOALS) 2>&1; echo $$? > $$status_file ) | tee $$project_log; \
 		status=$$(cat $$status_file); \
 		rm -f $$status_file; \
 		if [ $$status -ne 0 ]; then \
@@ -283,6 +306,8 @@ init:
 	@echo "	Building: $(TARGET)"
 	@echo "*************************************"
 	@echo " Compiler: $(CXX)"
+	@if [ -n "$(TOOLCHAIN)" ]; then echo " Toolchain: $(TOOLCHAIN)"; fi
+	@if [ -n "$(WINDOWS_MIN_VERSION)" ]; then echo " Windows API baseline: $(WINDOWS_MIN_VERSION)"; fi
 	@echo " CXXFLAGS: $(CXXFLAGS)"
 	@echo " DEFINES:  $(DEFINES)"
 	@echo " Executing pre-build clean commands..."
@@ -293,6 +318,8 @@ init:
 	@echo " Building: $(TARGET)" >> $(TARGET_BUILD_LOG)
 	@echo "*************************************" >> $(TARGET_BUILD_LOG)
 	@echo " Compiler: $(CXX)" >> $(TARGET_BUILD_LOG)
+	@if [ -n "$(TOOLCHAIN)" ]; then echo " Toolchain: $(TOOLCHAIN)" >> $(TARGET_BUILD_LOG); fi
+	@if [ -n "$(WINDOWS_MIN_VERSION)" ]; then echo " Windows API baseline: $(WINDOWS_MIN_VERSION)" >> $(TARGET_BUILD_LOG); fi
 	@echo " CXXFLAGS: $(CXXFLAGS)" >> $(TARGET_BUILD_LOG)
 	@echo " DEFINES:  $(DEFINES)" >> $(TARGET_BUILD_LOG)
 	
@@ -331,7 +358,7 @@ endif
 deepclean: clean
 	@set -e; \
 	for x in $(DEPENDENCIES); do \
-		$(MAKE) -C $$x clean; \
+		"$(MAKE)" -C $$x clean; \
 	done
 
 clean:

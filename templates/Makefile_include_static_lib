@@ -7,9 +7,18 @@ TOPDIR?=../..
 INCDIR+=-I../ -I./include -I/usr/include -I./external -I$(TOPDIR)/external
 LIBDIR+=-L/usr/lib
 
-CC=gcc
+ifneq (,$(findstring FI_GFX_VULKAN,$(EXTRACXXFLAGS)))
+ifneq ($(strip $(VULKAN_SDK)),)
+VULKAN_SDK_PATH := $(subst \,/,$(VULKAN_SDK))
+ifeq ($(OS),Windows_NT)
+INCDIR += -I$(VULKAN_SDK_PATH)/Include
+else
+INCDIR += -I$(VULKAN_SDK_PATH)/include
+endif
+endif
+endif
+
 CCFLAGS+=$(INCDIR) -Wall
-CXX=g++
 CXXFLAGS+=$(INCDIR) -std=c++17 $(EXTRACXXFLAGS)
 OBJCFLAGS+=$(INCDIR) -fmodules $(EXTRACXXFLAGS)
 OBJCXXFLAGS+=$(INCDIR) $(CXXFLAGS) -fmodules
@@ -27,12 +36,13 @@ ifneq (,$(filter gles3,$(MAKECMDGOALS)))
 GLES3=1
 endif
 
+include $(TOPDIR)/templates/Makefile_include_toolchain
+
 ### Tool / OS specific substitutions
 RM=rm -rf
 CP=cp -f
 SLASH=/
 CMDSEP=;
-AR=ar rcs
 
 ### Operating system specific defines, etc.
 ifdef WEB
@@ -55,16 +65,22 @@ ifdef WEB
 	endif
 	CC =emcc
 	CXX =em++
-	AR =emar rcs
+	AR =emar
 	OUTDIR=build/$(WEB_BUILD_VARIANT)
 else
 	ifeq ($(OS),Windows_NT)
-		DEFINES += -DWIN32 $(CXXFLAGS_WIN)
+		DEFINES += -DWIN32 $(WINDOWS_VERSION_DEFINES) $(CXXFLAGS_WIN)
+		ifeq ($(VSCMD_ARG_TGT_ARCH),x64)
+			DEFINES += -DAMD64
+		else ifeq ($(VSCMD_ARG_TGT_ARCH),x86)
+			DEFINES += -DIA32
+		else
 		ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
 			DEFINES += -DAMD64
 		endif
 		ifeq ($(PROCESSOR_ARCHITECTURE),x86)
 			DEFINES += -DIA32
+		endif
 		endif
 
 		LIBS=$(LIBS_W32)
@@ -192,7 +208,7 @@ $(OBJDIR)/%.o: $(SOURCEDIR)/%.mm | init
 $(TARGET): $(OBJECTS)
 	@echo ""
 	@echo " Building static library:"
-	$(AR) $(OUTDIR)/$@ $^
+	$(AR) $(ARFLAGS) $(OUTDIR)/$@ $^
 
 
 .PHONY: test
@@ -203,7 +219,7 @@ test:
 	@echo " Building test: "
 	@echo "*************************************"
 	@echo ""
-	$(MAKE) -C test
+	"$(MAKE)" -C test
 
 init:
 	@echo ""
@@ -211,6 +227,8 @@ init:
 	@echo "	Building: $(TARGET)"
 	@echo "*************************************"
 	@echo " Compiler: $(CXX)"
+	@if [ -n "$(TOOLCHAIN)" ]; then echo " Toolchain: $(TOOLCHAIN)"; fi
+	@if [ -n "$(WINDOWS_MIN_VERSION)" ]; then echo " Windows API baseline: $(WINDOWS_MIN_VERSION)"; fi
 	@echo " CXXFLAGS: $(CXXFLAGS)"
 	@echo " DEFINES:  $(DEFINES)"
 	@echo " Executing pre-build clean commands..."
@@ -239,4 +257,4 @@ clean:
 	$(RM) src$(SLASH)moc_*
 	$(RM) $(TOPDIR)$(SLASH)lib$(SLASH)$(TARGET)
 	$(POSTBUILDCLEAN)
-	$(MAKE) -C test clean
+	"$(MAKE)" -C test clean
