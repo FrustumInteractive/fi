@@ -30,6 +30,8 @@ LIBS=$(LIBS_LINUX)
 
 RESOURCES?=
 CLEAN_EXTRA?=
+ASSET_PACKAGE_TARGET?=
+ASSET_PACKAGE_OUTPUTS?=
 BUILD_LOG_DIR?=.buildlogs
 BUILD_LOG_FILE?=build.log
 TARGET_BUILD_LOG:=$(BUILD_LOG_DIR)/$(TARGET).log
@@ -178,6 +180,27 @@ OBJECTS+=$(patsubst %, $(OBJDIR)/%, $(OBJCXX_FILES:.mm=.o))
 INCDIR+=$(patsubst %, -I%/include, $(DEPENDENCIES))
 LIBDIR+=$(patsubst %, -L%/lib, $(DEPENDENCIES))
 
+.PHONY: assetpackages
+assetpackages:
+ifneq ($(OS),Windows_NT)
+	@if [ -n "$(ASSET_PACKAGE_TARGET)" ]; then \
+		missing=0; \
+		for x in $(ASSET_PACKAGE_OUTPUTS); do \
+			if [ ! -f "$$x" ]; then missing=1; fi; \
+		done; \
+		if [ $$missing -ne 0 ]; then \
+			echo " No asset package found; generating before build."; \
+			"$(MAKE)" $(ASSET_PACKAGE_TARGET); \
+		fi; \
+	fi
+endif
+
+ifneq ($(strip $(ASSET_PACKAGE_TARGET)),)
+$(DEPENDENCIES): assetpackages
+endif
+
+.DEFAULT_GOAL := all
+
 all: finish
 
 .PHONY: web gles3
@@ -262,7 +285,7 @@ $(OBJDIR)/%.o: $(SOURCEDIR)/%.mm | dependencies init
 		exit 1; \
 	fi
 
-$(TARGET): $(OBJECTS) dependencies | init
+$(TARGET): $(OBJECTS) dependencies assetpackages | init
 	@echo ""
 	@echo " Link:"
 	@echo "" >> $(TARGET_BUILD_LOG)
@@ -363,6 +386,9 @@ deepclean: clean
 
 clean:
 	$(RM) $(CLEAN_TARGET) $(CLEAN_EXTRA)
+ifneq ($(OS),Windows_NT)
+	@if [ -n "$(RESOURCES)" ]; then find $(RESOURCES) -type f -name '*.fas' -delete; fi
+endif
 	$(RM) web$(SLASH)$(CLEAN_TARGET).worker.js
 	$(RM) web$(SLASH)$(CLEAN_TARGET).wasm
 	$(RM) web$(SLASH)$(CLEAN_TARGET).data

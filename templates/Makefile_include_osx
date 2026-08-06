@@ -42,7 +42,13 @@ INFOPLIST = \
 		mkdir -p $(TARGET).app/Contents/MacOS && \
 		mkdir -p $(TARGET).app/Contents/Resources && \
 		echo "$(INFOPLIST)" >$(TARGET).app/Contents/Info.plist && \
-		$(foreach x, $(RESOURCES), rsync -a --delete $(x) $(TARGET).app/Contents/MacOS/;) \
+		for x in $(RESOURCES); do \
+			if find $$x -type f -name '*.fas' -print -quit | grep -q .; then \
+				rsync -a --delete --delete-excluded --exclude 'models/' --exclude 'textures/' $$x $(TARGET).app/Contents/MacOS/; \
+			else \
+				rsync -a --delete $$x $(TARGET).app/Contents/MacOS/; \
+			fi; \
+		done && \
 		cp $(TARGET) $(TARGET).app/Contents/MacOS/
 
 	POSTBUILDCLEAN:=
