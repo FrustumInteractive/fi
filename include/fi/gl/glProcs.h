@@ -108,6 +108,9 @@ extern PFNGLUNMAPBUFFERPROC glUnmapBuffer;
 extern PFNGLGETBUFFERPARAMETERIVPROC glGetBufferParameteriv;
 extern PFNGLGETBUFFERPOINTERVPROC glGetBufferPointerv;
 
+// GL 3.3
+extern PFNGLGETQUERYOBJECTUI64VPROC glGetQueryObjectui64v;
+
 // GL 2.0
 extern PFNGLBLENDEQUATIONSEPARATEPROC glBlendEquationSeparate;
 extern PFNGLDRAWBUFFERSPROC glDrawBuffers;
