@@ -75,6 +75,27 @@ other deps:
 Hardware accellerated graphics drivers with at least OpenGL 3.2 support are required
 development libraries for those drivers are also needed. 
 
+For Vulkan development and the shader tools used by fiApp/fiGfx on Ubuntu:
+
+  sudo apt update
+  sudo apt install libvulkan-dev vulkan-tools glslang-tools xxd
+
+The Vulkan loader also needs a driver for the installed GPU. For Intel and AMD
+GPUs, install Ubuntu's Mesa Vulkan driver:
+
+  sudo apt install mesa-vulkan-drivers
+
+For NVIDIA GPUs, install Ubuntu's recommended proprietary NVIDIA driver. Confirm
+that Vulkan can see the GPU with:
+
+  vulkaninfo --summary
+
+Ubuntu packages use the standard system include and library paths; VULKAN_SDK
+does not need to be set. For example, run the fiGfx scene test with:
+
+  cd projects/fiGfx/test/scene
+  ./build_run.sh vulkan
+
 
 General
 -------
