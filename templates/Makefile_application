@@ -7,7 +7,7 @@ LIBDIR=-L$(TOPDIR)/lib
 
 LIBS_LINUX= -lgfxAPI -lGLEW -lGL -lX11
 LIBS_W32= -ld3d9 -static -lgfxAPI -lgfxApp -lglew32s -lopengl32 -lgdi32
-LIBS_OSX= -framework Cocoa -framework OpenGL
+LIBS_OSX= -framework Cocoa -framework OpenGL -framework CoreVideo
 
 ### Input Source Files
 C_FILES=

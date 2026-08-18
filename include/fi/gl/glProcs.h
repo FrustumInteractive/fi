@@ -95,6 +95,7 @@ extern PFNGLENDQUERYPROC glEndQuery;
 extern PFNGLGETQUERYIVPROC glGetQueryiv;
 extern PFNGLGETQUERYOBJECTIVPROC glGetQueryObjectiv;
 extern PFNGLGETQUERYOBJECTUIVPROC glGetQueryObjectuiv;
+extern PFNGLGETQUERYOBJECTUI64VPROC glGetQueryObjectui64v;
 extern PFNGLBINDBUFFERPROC glBindBuffer;
 extern PFNGLDELETEBUFFERSPROC glDeleteBuffers;
 extern PFNGLGENBUFFERSPROC glGenBuffers;
@@ -346,6 +347,7 @@ extern "C" {
 	void initGL30Funcs();
 	void initGL31Funcs();
 	void initGL32Funcs();
+	void initGL33Funcs();
 
 	void initGLES20Funcs();
 	void initGLES30Funcs();
